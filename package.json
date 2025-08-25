@@ -24,8 +24,8 @@
   "dependencies": {
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
-    "@tradetrust-tt/decentralized-renderer-react-components": "^3.16.11",
-    "@trustvc/trustvc": "^1.6.0-alpha.6",
+    "@tradetrust-tt/decentralized-renderer-react-components": "^3.16.12",
+    "@trustvc/trustvc": "^2.0.0",
     "date-fns": "^3.3.1",
     "debug": "^4.3.4",
     "escape-goat": "4.0.0",
