@@ -204,13 +204,13 @@ export interface ChainDoxBillOfLading {
 
   // Cargo Details
   goodsDescription?: string;
-  numberOfPackages?: number;
+  numberOfPackages?: string;
   packagingType?: string;
   shippingMarks?: string;
 
-  grossWeight?: number;
-  netWeight?: number;
-  volume?: number;
+  grossWeight?: string;
+  netWeight?: string;
+  volume?: string;
 
   // Transport Details
   journeyIdentifier?: string;
