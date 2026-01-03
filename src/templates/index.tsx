@@ -21,6 +21,5 @@ export const registry: TemplateRegistry<any> = {
   TEMPLATE_A: TemplateATemplates,
   TEMPLATE_B: TemplateBTemplates,
   INVOICE: InvoiceTemplates,
-  
-  BILL_OF_LADING_CARRIER: BillOfLadingCarrierTemplates,
+  BILL_OF_LADING: BillOfLadingCarrierTemplates,
 };
