@@ -3,6 +3,7 @@ import { TemplateATemplates } from "./examples/TemplateA";
 import { TemplateBTemplates } from "./examples/TemplateB";
 import { InvoiceTemplates } from "./examples/Invoice";
 import { BillOfLadingTemplates } from "./examples/BillOfLading";
+import { WarehouseReceiptTemplates } from "./examples/WarehouseReceipt";
 // import { BillOfLadingCarrierTemplates } from "./examples/BillOfLadingCarrier";
 
 /**
@@ -23,4 +24,5 @@ export const registry: TemplateRegistry<any> = {
   TEMPLATE_B: TemplateBTemplates,
   INVOICE: InvoiceTemplates,
   BILL_OF_LADING: BillOfLadingTemplates,
+  WAREHOUSE_RECEIPT: WarehouseReceiptTemplates
 };
