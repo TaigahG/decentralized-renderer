@@ -27,6 +27,6 @@ export const registry: TemplateRegistry<any> = {
   INVOICE: InvoiceTemplates,
   BILL_OF_LADING: BillOfLadingTemplates,
   WAREHOUSE_RECEIPT: WarehouseReceiptTemplates,
-  PROMISSORY_NOTE: PromissoryNoteTemplates,
+  ELECTRONIC_PROMISSORY_NOTE: PromissoryNoteTemplates,
   CERTIFICATE_OF_ORIGIN: CertificateOfOriginTemplates
 };
