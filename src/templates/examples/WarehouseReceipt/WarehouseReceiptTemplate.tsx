@@ -145,12 +145,12 @@ export const WarehouseReceiptTemplate: FunctionComponent<
                         <div className="w-1/2 p-4 bg-gray-50 border-r border-black flex flex-col justify-center">
                             <h1 className="text-3xl font-bold tracking-tight">WAREHOUSE RECEIPT</h1>
                             <div className="flex gap-2 mt-2">
-                                <span className={`px-2 py-0.5 text-[10px] uppercase font-bold border border-black ${isNegotiable ? 'bg-black text-white' : 'bg-white text-gray-400'}`}>
-                                    Negotiable
+                                <span className={`px-2 py-0.5 text-[10px] uppercase font-bold border border-black bg-black text-white`}>
+                                    Transferable
                                 </span>
-                                <span className={`px-2 py-0.5 text-[10px] uppercase font-bold border border-black ${!isNegotiable ? 'bg-black text-white' : 'bg-white text-gray-400'}`}>
+                                {/* <span className={`px-2 py-0.5 text-[10px] uppercase font-bold border border-black ${!isNegotiable ? 'bg-black text-white' : 'bg-white text-gray-400'}`}>
                                     Non-Negotiable
-                                </span>
+                                </span> */}
                             </div>
                         </div>
                         <div className="w-1/2 p-4 flex flex-col justify-between">
