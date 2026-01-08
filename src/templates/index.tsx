@@ -2,7 +2,11 @@ import { TemplateRegistry } from "@tradetrust-tt/decentralized-renderer-react-co
 import { TemplateATemplates } from "./examples/TemplateA";
 import { TemplateBTemplates } from "./examples/TemplateB";
 import { InvoiceTemplates } from "./examples/Invoice";
-import { BillOfLadingCarrierTemplates } from "./examples/BillOfLadingCarrier";
+import { BillOfLadingTemplates } from "./examples/BillOfLading";
+import { WarehouseReceiptTemplates } from "./examples/WarehouseReceipt";
+import { PromissoryNoteTemplates } from "./examples/PromissoryNote";
+import { CertificateOfOriginTemplates } from "./examples/CertificateOfOrigin";
+// import { BillOfLadingCarrierTemplates } from "./examples/BillOfLadingCarrier";
 
 /**
  * Template Registry
@@ -21,5 +25,8 @@ export const registry: TemplateRegistry<any> = {
   TEMPLATE_A: TemplateATemplates,
   TEMPLATE_B: TemplateBTemplates,
   INVOICE: InvoiceTemplates,
-  BILL_OF_LADING: BillOfLadingCarrierTemplates,
+  BILL_OF_LADING: BillOfLadingTemplates,
+  WAREHOUSE_RECEIPT: WarehouseReceiptTemplates,
+  PROMISSORY_NOTE: PromissoryNoteTemplates,
+  CERTIFICATE_OF_ORIGIN: CertificateOfOriginTemplates
 };
