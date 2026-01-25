@@ -6,6 +6,11 @@ import { BillOfLadingTemplates } from "./examples/BillOfLading";
 import { WarehouseReceiptTemplates } from "./examples/WarehouseReceipt";
 import { PromissoryNoteTemplates } from "./examples/PromissoryNote";
 import { CertificateOfOriginTemplates } from "./examples/CertificateOfOrigin";
+import { CargoInsuranceTemplates } from "./examples/CargoInsurance";
+import { SeaWaybillTemplates } from "./examples/SeaWaybill";
+import { PackingListTemplates } from "./examples/packingList";
+import { ShipperLetterOfInstructionsTemplates } from "./examples/ShipperLetterOfInstruction";
+import { ShipDeliveryOrderTemplates } from "./examples/ShipDeliveryOrder";
 // import { BillOfLadingCarrierTemplates } from "./examples/BillOfLadingCarrier";
 
 /**
@@ -28,5 +33,10 @@ export const registry: TemplateRegistry<any> = {
   BILL_OF_LADING: BillOfLadingTemplates,
   WAREHOUSE_RECEIPT: WarehouseReceiptTemplates,
   ELECTRONIC_PROMISSORY_NOTE: PromissoryNoteTemplates,
-  CERTIFICATE_OF_ORIGIN: CertificateOfOriginTemplates
+  CERTIFICATE_OF_ORIGIN: CertificateOfOriginTemplates,
+  CARGO_INSURANCE: CargoInsuranceTemplates,
+  SEA_WAYBILL: SeaWaybillTemplates,
+  PACKING_LIST: PackingListTemplates,
+  SHIPPER_LETTER_OF_INSTRUCTIONS: ShipperLetterOfInstructionsTemplates,
+  SHIP_DELIVERY_ORDER: ShipDeliveryOrderTemplates
 };
