@@ -16,6 +16,16 @@ import { SeaCargoManifestTemplates } from "./examples/SeaCargoManifest";
 import { AirCargoManifestTemplates } from "./examples/AirCargoManifest";
 import { RoadConsignmentNoteTemplates } from "./examples/RoadConsignmentNote";
 import { RailConsignmentNoteTemplates } from "./examples/RailConsignmentNote";
+import { DangerousGoodsDeclarationTemplates } from "./examples/DangerousGoodDeclaration";
+import { ConsignmentSecurityDeclarationTemplates } from "./examples/ConsignmentSecurityDeclaration";
+import { EILIcenseAgriculturalTemplates } from "./examples/EILicenseAgricultural";
+import { CustomsDeclarationTemplates } from "./examples/CustomsDeclaration";
+import { CODEXCertificateTemplates } from "./examples/CODEXcertificate";
+import { InterVeterinaryCertificateTemplates } from "./examples/InterVeterinaryCertificate";
+import { CITESPermitTemplates } from "./examples/CITESPermit";
+import { CertificateOfInspectionTemplates } from "./examples/CertificateOfInspection";
+import { CustomsBondTemplates } from "./examples/CustomsBond";
+import { ATACarnetTemplates } from "./examples/ATACarnet";
 // import { BillOfLadingCarrierTemplates } from "./examples/BillOfLadingCarrier";
 
 /**
@@ -48,5 +58,15 @@ export const registry: TemplateRegistry<any> = {
   SEA_CARGO_MANIFEST: SeaCargoManifestTemplates,
   AIR_CARGO_MANIFEST: AirCargoManifestTemplates,
   RAIL_CONSIGNMENT_NOTE: RailConsignmentNoteTemplates,
-  ROAD_CONSIGNMENT_NOTE: RoadConsignmentNoteTemplates
+  ROAD_CONSIGNMENT_NOTE: RoadConsignmentNoteTemplates,
+  DANGEROUS_GOODS_DECLARATION: DangerousGoodsDeclarationTemplates,
+  CONSIGNMENT_SECURITY_DECLARATION: ConsignmentSecurityDeclarationTemplates,
+  LICENSE_FOR_AGRICULTURAL_PRODUCTS: EILIcenseAgriculturalTemplates,
+  CUSTOMS_DECLARATION: CustomsDeclarationTemplates,
+  CODEX: CODEXCertificateTemplates,
+  INTERNATIONAL_VETERINARY_CERTIFICATE: InterVeterinaryCertificateTemplates,
+  CITES_PERMIT_CERTIFICATE: CITESPermitTemplates,
+  CERTIFICATE_OF_INSPECTION_FOR_ORGANIC_PRODUCT: CertificateOfInspectionTemplates,
+  CUSTOMS_BOND: CustomsBondTemplates,
+  ATA_CARNET: ATACarnetTemplates
 };
