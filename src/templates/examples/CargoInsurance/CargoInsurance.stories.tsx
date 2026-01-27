@@ -10,10 +10,7 @@ export default {
   },
 };
 
-/**
- * Default Bill of Lading View
- * Shows your actual VC data with many fields as "-"
- */
+
 export const DefaultCargoInsurance: FunctionComponent = () => {
   return (
     <CargoInsuranceTemplate
