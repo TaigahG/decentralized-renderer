@@ -26,6 +26,11 @@ import { CITESPermitTemplates } from "./examples/CITESPermit";
 import { CertificateOfInspectionTemplates } from "./examples/CertificateOfInspection";
 import { CustomsBondTemplates } from "./examples/CustomsBond";
 import { ATACarnetTemplates } from "./examples/ATACarnet";
+import { EMCSDocumentTemplates } from "./examples/EMCSDocument";
+import { ExciseGuaranteeTemplates } from "./examples/ExciseGuarantee";
+import { LetterOfCreditTemplates } from "./examples/LetterOfCredit";
+import { PaymentConfirmationTemplates } from "./examples/PaymentConfirmation";
+import { BillOfExchangeTemplates } from "./examples/BillOfExchange";
 // import { BillOfLadingCarrierTemplates } from "./examples/BillOfLadingCarrier";
 
 /**
@@ -68,5 +73,10 @@ export const registry: TemplateRegistry<any> = {
   CITES_PERMIT_CERTIFICATE: CITESPermitTemplates,
   CERTIFICATE_OF_INSPECTION_FOR_ORGANIC_PRODUCT: CertificateOfInspectionTemplates,
   CUSTOMS_BOND: CustomsBondTemplates,
-  ATA_CARNET: ATACarnetTemplates
+  ATA_CARNET: ATACarnetTemplates,
+  EMCS_ADMINISTRATIVE_DOCUMENT: EMCSDocumentTemplates,
+  EXCISE_GUARANTEE: ExciseGuaranteeTemplates,
+  LETTER_OF_CREDIT: LetterOfCreditTemplates,
+  PAYMENT_CONFIRMATION: PaymentConfirmationTemplates,
+  BILL_OF_EXCHANGE: BillOfExchangeTemplates,
 };
