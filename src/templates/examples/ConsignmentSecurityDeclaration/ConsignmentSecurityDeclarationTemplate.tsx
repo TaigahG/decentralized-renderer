@@ -44,15 +44,15 @@ export const ConsignmentSecurityDeclarationTemplate: FunctionComponent<
       certificationStatement,
       issuedDateTime,
       issuedBy: {
-        name: issuerPersonName,
-        signature: issuerSignature,
-        position: issuerPosition,
+        name: issuerPersonName = undefined,
+        signature: issuerSignature = undefined,
+        position: issuerPosition = undefined,
       } = {},
       receivedBy: {
-        name: receiverName,
-        signature: receiverSignature,
-        organization: receiverOrg,
-        dateTime: receivedAt,
+        name: receiverName = undefined,
+        signature: receiverSignature = undefined,
+        organization: receiverOrg = undefined,
+        dateTime: receivedAt = undefined,
       } = {},
     } = {},
   } = data;

@@ -72,7 +72,7 @@ export const EMCSDocumentTemplate: FunctionComponent<
     } = {},
     changeOfDestination: {
       newDestinationTypeCode,
-      newConsignee: { traderName: newConsigneeName } = {},
+      newConsignee: { traderName: newConsigneeName = undefined } = {},
     } = {},
     cancellation: {
       cancellationReasonCode,

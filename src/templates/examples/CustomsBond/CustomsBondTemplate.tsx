@@ -44,14 +44,14 @@ export const CustomsBondTemplate: FunctionComponent<
     // --- Financials ---
     financials: {
       totalLiability: {
-        amount: liabilityAmount,
-        currencyCode: liabilityCurrency
+        amount: liabilityAmount = undefined,
+        currencyCode: liabilityCurrency = undefined
       } = {},
       limitOfLiability: {
-        amount: limitAmount
+        amount: limitAmount = undefined
       } = {},
       premiumAmount: {
-        amount: premiumVal
+        amount: premiumVal = undefined
       } = {},
     } = {},
 
@@ -70,9 +70,9 @@ export const CustomsBondTemplate: FunctionComponent<
       signatureOfSurety,
       officialSeal,
       witness: {
-        name: witnessName,
-        signature: witnessSignature,
-        dateOfWitnessing,
+        name: witnessName = undefined,
+        signature: witnessSignature = undefined,
+        dateOfWitnessing = undefined,
       } = {},
     } = {},
   } = data;

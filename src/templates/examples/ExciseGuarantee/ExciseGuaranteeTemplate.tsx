@@ -25,9 +25,9 @@ export const ExciseGuaranteeTemplate: FunctionComponent<
       exciseNumber: principalSeed,
       taxIdentificationNumber: principalTaxId,
       address: {
-        streetAddress: principalStreet,
-        city: principalCity,
-        countryCode: principalCountry,
+        streetAddress: principalStreet = undefined,
+        city: principalCity = undefined,
+        countryCode: principalCountry = undefined,
       } = {},
       contactPerson: principalContact,
     } = {},
@@ -36,9 +36,9 @@ export const ExciseGuaranteeTemplate: FunctionComponent<
       institutionType,
       bankIdentifierCode: guarantorBic,
       address: {
-        streetAddress: guarantorStreet,
-        city: guarantorCity,
-        countryCode: guarantorCountry,
+        streetAddress: guarantorStreet = undefined,
+        city: guarantorCity = undefined,
+        countryCode: guarantorCountry = undefined,
       } = {},
       contactPerson: guarantorContact,
     } = {},
@@ -55,8 +55,8 @@ export const ExciseGuaranteeTemplate: FunctionComponent<
     } = {},
     guaranteeUtilization: {
       utilizationMethod,
-      currentUtilization: { amountValue: usedAmount } = {},
-      availableBalance: { amountValue: availableAmount } = {},
+      currentUtilization: { amountValue: usedAmount = undefined } = {},
+      availableBalance: { amountValue: availableAmount = undefined } = {},
     } = {},
 
     // --- Scope ---
@@ -71,7 +71,7 @@ export const ExciseGuaranteeTemplate: FunctionComponent<
     guaranteeConditions: {
       termsAndConditions,
       claimProcedure,
-      noticePeriod: { days: noticeDays } = {},
+      noticePeriod: { days: noticeDays = undefined } = {},
     } = {},
     referenceToAuthorization: {
       authorizationNumber,

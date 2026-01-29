@@ -28,7 +28,7 @@ export const CertificateOfInspectionTemplate: FunctionComponent<
       address: exporterAddress,
       city: exporterCity,
       countryCode: exporterCountry,
-      contactPerson: { name: exporterContactName } = {},
+      contactPerson: { name: exporterContactName = undefined } = {},
     } = {},
     producer: {
       name: producerName,

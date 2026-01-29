@@ -26,7 +26,7 @@ export const PaymentConfirmationTemplate: FunctionComponent<
       swiftBic: payerSwift,
       iban: payerIban,
       address: {
-        countryCode: payerCountry
+        countryCode: payerCountry = undefined
       } = {},
     } = {},
     payee: {

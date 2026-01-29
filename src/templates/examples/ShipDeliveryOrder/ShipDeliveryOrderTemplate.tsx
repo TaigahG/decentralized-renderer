@@ -45,9 +45,9 @@ export const ShipDeliveryOrderTemplate: FunctionComponent<
         containerDetails = [],
         returnInstructions: {
             emptyReturnDepot: {
-                depotName,
-                address: depotAddress,
-                operatingHours,
+                depotName = undefined,
+                address: depotAddress = undefined,
+                operatingHours = undefined,
             } = {},
             returnValidityDate,
             specialInstructions,

@@ -64,8 +64,8 @@ export const LetterOfCreditTemplate: FunctionComponent<
       amountValue: lcAmount,
       amountInWords,
       tolerance: {
-        positivePercentage: tolerancePlus,
-        negativePercentage: toleranceMinus,
+        positivePercentage: tolerancePlus = undefined,
+        negativePercentage: toleranceMinus = undefined,
       } = {},
     } = {},
     availableBalance: {
@@ -101,7 +101,7 @@ export const LetterOfCreditTemplate: FunctionComponent<
       descriptionOfGoods,
       hsCode,
       quantity: goodsQuantity,
-      unitPrice: { amountValue: unitPriceValue } = {},
+      unitPrice: { amountValue: unitPriceValue = undefined } = {},
       countryOfOrigin,
     } = {},
 
