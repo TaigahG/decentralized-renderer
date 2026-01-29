@@ -49,7 +49,7 @@ export const CODEXCertificateTemplate: FunctionComponent<
       hsCode,
       natureOfFood,
       numberOfPackages,
-      netWeight: { value: weightValue, unit: weightUnit } = {},
+      netWeight: { value: weightValue = undefined, unit: weightUnit = undefined } = {},
       identificationMarks,
     } = {},
 
@@ -66,8 +66,8 @@ export const CODEXCertificateTemplate: FunctionComponent<
       publicHealthAttestation = [],
       fairTradeAttestation = [],
       temperatureDeclaration: {
-        requiredTemperature: { value: tempVal, unit: tempUnit } = {},
-        storageConditions,
+        requiredTemperature: { value: tempVal = undefined, unit: tempUnit = undefined } = {},
+        storageConditions = undefined,
       } = {},
     } = {},
   } = data;

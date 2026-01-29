@@ -41,7 +41,7 @@ export const InterVeterinaryCertificateTemplate: FunctionComponent<
       descriptionOfCommodity,
       speciesScientificName,
       numberOfPackagesAnimals,
-      netWeight: { value: weightValue, unit: weightUnit } = {},
+      netWeight: { value: weightValue = undefined, unit: weightUnit = undefined } = {},
     } = {},
     individualIdentification = [],
     originEstablishment: {
@@ -58,8 +58,8 @@ export const InterVeterinaryCertificateTemplate: FunctionComponent<
       meansOfTransport,
       transportIdentifier,
       disinfectionRecord: {
-        disinfected: isDisinfected,
-        dateOfDisinfection,
+        disinfected: isDisinfected = undefined,
+        dateOfDisinfection = undefined,
       } = {},
     } = {},
     placeOfIssue,

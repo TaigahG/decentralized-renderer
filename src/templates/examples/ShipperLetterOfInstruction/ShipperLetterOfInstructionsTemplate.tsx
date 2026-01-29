@@ -46,21 +46,21 @@ export const ShipperLetterOfInstructionsTemplate: FunctionComponent<
         valueAndInsurance: {
             valueForCustoms,
             insuranceInstructions: {
-                insureGoods,
-                insuredValue,
-                notes: insuranceNotes,
+                insureGoods = undefined,
+                insuredValue = undefined,
+                notes: insuranceNotes = undefined,
             } = {},
         } = {},
         documentDistribution: {
             documentationInstructions,
             billOfLadingInstructions: {
-                numberOfOriginals,
-                releaseType,
+                numberOfOriginals = undefined,
+                releaseType = undefined,
             } = {},
             exportControl: {
-                licenseRequired,
-                licenseNumber,
-                eccn,
+                licenseRequired = undefined,
+                licenseNumber = undefined,
+                eccn = undefined,
             } = {},
         } = {},
         additionalInstructions,

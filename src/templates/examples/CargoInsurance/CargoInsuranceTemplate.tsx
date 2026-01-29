@@ -43,8 +43,8 @@ export const CargoInsuranceTemplate: FunctionComponent<
       invoiceReference,
       incoterms,
       insuredValue: {
-        currencyCode: insuredValueCurrencyCode,
-        amount: insuredValueAmount,
+        currencyCode: insuredValueCurrencyCode = undefined,
+        amount: insuredValueAmount = undefined,
       } = {},
       basisOfValuation,
     } = {},
@@ -53,8 +53,8 @@ export const CargoInsuranceTemplate: FunctionComponent<
       warClauseIncluded,
       strikesClauseIncluded,
       deductible: {
-        currencyCode: deductibleCurrencyCode,
-        amount: deductibleAmount,
+        currencyCode: deductibleCurrencyCode = undefined,
+        amount: deductibleAmount = undefined,
       } = {},
       surveyClause,
     } = {},

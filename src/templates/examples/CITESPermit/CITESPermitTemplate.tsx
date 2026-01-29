@@ -43,8 +43,8 @@ export const CITESPermitTemplate: FunctionComponent<
     // --- Customs Endorsement ---
     endorsement: {
       quantityActuallyExported: {
-        value: actualQty,
-        unit: actualUnit
+        value: actualQty = undefined,
+        unit: actualUnit = undefined
       } = {},
       portOfExport,
       customsSignature,
