@@ -1,80 +1,72 @@
 import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
-/**
- * Bill of Lading document structure matching your VC's flat structure
- */
 export interface BillOfLadingDocument {
-  // Document Identifiers
-  bolId?: string;
-  documentIdentifier?: string;
-  bookingReference?: string;
-  houseWaybillId?: string;
-  transportContractNumber?: string;
+  // --- Document Identifiers ---
+  documentId?: string;
+  shipmentId?: string;
   contractNumber?: string;
-  freightForwarderReference?: string;
 
-  // Dates
+  // --- Dates ---
+  /** Date format: YYYY-MM-DD */
   issueDate?: string;
-  actualArrivalDate?: string;
-  estimatedDeparture?: string;
-  actualDepartureDate?: string;
-  loadingDate?: string;
-  estimatedArrival?: string;
+  /** Date format: YYYY-MM-DD */
+  consignmentLoadingDate?: string;
 
-  // Buyer (flat structure)
-  buyerName?: string;
-  buyerAddress?: string;
+  // --- Parties ---
+  carrier?: BOLParty;
+  consignor?: BOLParty;
+  freightPayer?: BOLParty;
 
-  // Consignor (flat structure)
-  consignorName?: string;
-  consignorAddress?: string;
+  // --- Routing & Contract Details ---
+  baseportUnloadingLocation?: string;
+  transportContractDocumentConditions?: string;
 
-  // Consignee (flat structure)
-  consigneeName?: string;
-  consigneeAddress?: string;
+  // --- Weights & Measures ---
+  grossWeight?: string;
+  volume?: string;
 
-  // Carrier (flat structure)
-  carrierName?: string;
-  carrierLicenseNumber?: string;
+  // --- Goods Details ---
+  /** List of goods items covered under this Bill of Lading */
+  goods?: BOLGoodsItem[]; // Mapped from @set container
 
-  // Notify Party (flat structure)
-  notifyPartyName?: string;
-  notifyPartyContact?: string;
+  // --- Equipment & Transport Details ---
+  container?: BOLContainer;
+  fullOrEmpty?: string; // e.g., "Full", "Empty", "FCL", "LCL"
+  transportMeansIdentifier?: string; // e.g., Vessel name or Voyage number
+  vehicleRegistrationNumber?: string; // For multimodal/road transport legs
+  sealIdentifier?: string; // Security seal number
+}
 
-  // Locations (flat structure)
-  despatchAddress?: string;
-  despatchCountryCode?: string;
-  deliveryAddress?: string;
-  deliveryCountryCode?: string;
-  unloadingPortCode?: string;
-  unloadingCountry?: string;
-  exportationCountry?: string;
-  originCountry?: string;
+// --- Sub-Interfaces ---
 
-  // Goods Details
-  goodsDescription?: string;
-  packagingType?: string;
-  shippingMarks?: string;
-  netWeight?: string | number;
+/**
+ * Base representation of a party in the Bill of Lading.
+ * Shared across Carrier, Consignor, and Freight Payer.
+ */
+export interface BOLParty {
+  name?: string;
+  addressline?: string;
+  city?: string;
+  country?: string;
+  email?: string;
+}
 
-  // Transport Details
-  journeyIdentifier?: string;
-  transportMeansId?: string;
-  vehicleRegistration?: string;
-  containerSizeType?: string;
-  containerStatus?: string;
-  equipmentIdentifier?: string;
-  sealIdentifier?: string;
+/**
+ * Represents an individual goods line item in the shipment.
+ */
+export interface BOLGoodsItem {
+  description?: string;
+  numberOfPackages?: number;
+  hsCode?: string; // Harmonized System Code for customs
+}
 
-  // Trade Terms
-  tradeTermsCode?: string;
-  tradeTermsDescription?: string;
-
-  // Financial
-  freightCharges?: string | number;
-  collectCharges?: number;
-  prepaidAmount?: string | number;
+/**
+ * Represents the container equipment details.
+ */
+export interface BOLContainer {
+  size?: string; // e.g., "20ft", "40ft HQ"
+  type?: string; // e.g., "Dry Van", "Reefer", "Flat Rack"
 }
 
 /**

@@ -2,44 +2,69 @@ import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
 /**
- * Invoice document structure matching your VC's flat structure
+ * Represents a standard commercial Invoice.
+ * Used to request payment for goods or services provided.
  */
 export interface InvoiceDocument {
-  invoiceId?: string;
-  invoiceName?: string;
-  date?: string;
-  customerId?: string;
-  terms?: string;
-  
-  // Bill From (flat structure)
-  billFromName?: string;
-  billFromStreetAddress?: string;
-  billFromCity?: string;
-  billFromPostalCode?: string;
-  billFromPhoneNumber?: string;
-  
-  // Bill To (flat structure)
-  billToName?: string;
-  billToEmail?: string;
-  
-  // Bill To Company (flat structure)
-  billToCompanyName?: string;
-  billToCompanyStreetAddress?: string;
-  billToCompanyCity?: string;
-  billToCompanyPostalCode?: string;
-  billToCompanyPhoneNumber?: string;
-  
-  // Billable Items (single item)
-  billableItemsDescription?: string;
-  billableItemsQuantity?: string | number;
-  billableItemsRate?: string | number;
-  billableItemsAmount?: number;
-  
-  // Totals
-  subtotal?: number;
+  "@context"?: string | object;
+  "@id"?: string;
+  "@type"?: string;
+
+  // --- Document Identifiers ---
+  documentId?: string;
+  shipmentId?: string;
+  invoiceNumber?: string;
+
+  // --- Dates ---
+  /** Date format: YYYY-MM-DD */
+  issueDate?: string;
+  /** Date format: YYYY-MM-DD */
+  invoiceDate?: string;
+  /** Date format: YYYY-MM-DD */
+  paymentDueDate?: string;
+
+  // --- Parties ---
+  billFrom?: InvoiceParty;
+  billTo?: BillToParty;
+
+  // --- Line Items ---
+  /** List of individual items or services being billed */
+  billableItem?: BillableItem[]; // Mapped from @set container
+
+  // --- Totals ---
   tax?: number;
-  taxTotal?: number;
-  total?: number;
+  totalAmount?: number;
+}
+
+// --- Sub-Interfaces ---
+
+/**
+ * Base representation of a party in the Invoice.
+ */
+export interface InvoiceParty {
+  name?: string;
+  addressline?: string;
+  city?: string;
+  country?: string;
+  email?: string;
+}
+
+/**
+ * Represents the entity being billed, which includes payment destination details.
+ */
+export interface BillToParty extends InvoiceParty {
+  bankName?: string;
+  accountName?: string;
+  accountNumber?: string;
+}
+
+/**
+ * Represents an individual line item on the invoice.
+ */
+export interface BillableItem {
+  description?: string;
+  quantity?: number;
+  amount?: number;
 }
 
 /**

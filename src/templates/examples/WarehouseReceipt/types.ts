@@ -2,90 +2,46 @@ import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
 export interface WarehouseReceipt {
-    wrId?: string;
-    receiptNumber?: string;
-    documentIdentifier?: string;
+    // --- Document Identifiers ---
+    documentId?: string;
+    shipmentId?: string;
 
+    /** Date format: YYYY-MM-DD */
     issueDate?: string;
-    receiptDate?: string;
-    expiryDate?: string;
-    storageStartDate?: string;
-    storageEndDate?: string;
 
-    warehouseKeeperName?: string;
-    warehouseKeeperAddress?: string;
-    warehouseKeeperLicense?: string;
-    warehouseKeeperContact?: string;
+    // --- Parties ---
+    warehouseDepositor?: WarehouseParty;
+    warehouseKeeper?: WarehouseParty;
 
-    depositorName?: string;
-    depositorAddress?: string;
-    depositorId?: string;
-    depositorContact?: string;
-
-    holderName?: string;
-    holderAddress?: string;
-    holderId?: string;
-
-    notifyPartyName?: string;
-    notifyPartyContact?: string;
-
-    warehouseName?: string;
+    // --- Location & Weights ---
     warehouseAddress?: string;
-    warehouseCode?: string;
-    warehouseCountry?: string;
-    warehouseZone?: string;
-    storageBin?: string;
-
-    goodsDescription?: string;
-    commodityCode?: string;
-    hsCode?: string;
-    productIdentifier?: string;
-    batchNumber?: string;
-    serialNumbers?: string[];
-
-    quantity?: number;
-    quantityUnit?: string;
-    numberOfPackages?: number;
-    packagingType?: string;
-    packagingMarks?: string;
-
     grossWeight?: number;
-    netWeight?: number;
-    weightUnit?: string;
-    volume?: number;
-    volumeUnit?: string;
-    dimensions?: string;
+    transportMeanGrossWeight?: number;
 
-    temperatureRange?: string;
-    humidityRange?: string;
-    specialHandlingInstructions?: string;
-    hazardClass?: string;
+    // --- Goods Details ---
+    /** List of goods deposited in the warehouse */
+    goods?: WarehouseGoodsItem[]; // Mapped from @set container
+}
 
-    storageCharges?: number;
-    handlingCharges?: number;
-    otherCharges?: number;
-    totalCharges?: number;
-    paymentTerms?: string;
-    paymentStatus?: string;
+// --- Sub-Interfaces ---
 
-    insuranceValue?: number;
-    insuranceProvider?: string;
-    insurancePolicyNumber?: string;
+/**
+ * Base representation of a party in the Warehouse Receipt (Depositor or Keeper).
+ */
+export interface WarehouseParty {
+    name?: string;
+    addressline?: string;
+    city?: string;
+    country?: string;
+    email?: string;
+}
 
-    inboundReference?: string;
-    inboundDate?: string;
-    transportMode?: string;
-    vehicleNumber?: string;
-
-    receiptStatus?: string;
-    isNegotiable?: boolean;
-    isTransferable?: boolean;
-
-    termsAndConditions?: string;
-    liabilityClause?: string;
-    signature?: string;
-    signatureDate?: string;
-    authorizedSignatory?: string;
+/**
+ * Represents an individual goods line item stored in the warehouse.
+ */
+export interface WarehouseGoodsItem {
+    description?: string;
+    numberOfPackages?: number;
 }
 
 export type WarehouseReceiptW3C = SignedVerifiableCredential & {

@@ -1,98 +1,47 @@
 import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
+/**
+ * Represents a Promissory Note.
+ * A financial instrument that contains a written promise by one party (the drawer/maker) 
+ * to pay another party (the payee) a definite sum of money, either on demand or at a specified future date.
+ */
 export interface ElectronicPromissoryNote {
-    epnId?: string;
-    promissoryNoteNumber?: string;
-    documentIdentifier?: string;
+    // --- Document Identifiers ---
+    documentId?: string;
+    shipmentId?: string;
 
+    // --- Dates ---
+    /** Date format: YYYY-MM-DD */
     issueDate?: string;
-    issuePlace?: string;
-    maturityDate?: string;
+    /** Date format: YYYY-MM-DD */
     paymentDueDate?: string;
 
-    // maker
-    makerName?: string;
-    makerAddress?: string;
-    makerId?: string;
-    makerTaxId?: string;
-    makerContact?: string;
+    // --- Parties ---
+    payee?: PromissoryNoteParty;
+    drawer?: PromissoryNoteParty; // Also known as the maker or issuer
 
-    //payee
-    payeeName?: string;
-    payeeAddress?: string;
-    payeeId?: string;
-    payeeBankAccount?: string;
+    // --- Issuance & Terms ---
+    placeOfIssue?: string;
+    issuerStamp?: string; // Could be a text description or a URL to a digital stamp/seal
+    paymentTerm?: string; // e.g., "Net 30", "On Demand", "60 Days after sight"
 
-    //beneficiary
-    beneficiaryName?: string;
-    beneficiaryAddress?: string;
-    beneficiaryAccount?: string;
+    // --- Financials ---
+    monetaryAmount?: number;
+}
 
+// --- Sub-Interfaces ---
 
-    // endorser
-    endorserName?: string;
-    endorserSignature?: string;
-    endorsementDate?: string;
-
-    principalAmount?: number;
-    currency?: string;
-    amountInWords?: string;
-    interestRate?: number;
-    interestCalculationMethod?: string;
-    totalAmountPayable?: number;
-
-    paymentTerms?: string;
-    paymentMethod?: string;
-    paymentPlace?: string;
-    paymentInstructions?: string;
-
-    //bank details
-    bankName?: string;
-    bankAddress?: string;
-    bankSwiftCode?: string;
-    bankAccountNumber?: string;
-    bankRoutingNumber?: string;
-
-    //underlyingcontract
-    contractReference?: string;
-    invoiceReference?: string;
-    purchaseOrderReference?: string;
-
-    isNegotiable?: boolean;
-    isTransferable?: boolean;
-    transferRestrictions?: string;
-
-    governingLaw?: string;
-    disputeResolution?: string;
-    termsAndConditions?: string;
-
-    //digitalsignature
-    signatureTimestamp?: string;
-    signatureMethod?: string;
-    certificateAuthority?: string;
-
-    noteStatus?: string;
-    paymentStatus?: string;
-    defaultClause?: string;
-    acceleration?: string;
-
-    witnessName?: string;
-    witnessSignature?: string;
-    witnessAddress?: string;
-
-    //notary public
-    notaryName?: string;
-    notarySeal?: string;
-    notarizationDate?: string;
-
-    //collateral
-    collateralDescription?: string;
-    collateralValue?: number;
-
-    // amenmenthistory
-    amendmentDate?: string;
-    amendmentDetails?: string;
+/**
+ * Base representation of a party in the Promissory Note.
+ * Shared across Payee and Drawer.
+ */
+export interface PromissoryNoteParty {
+    name?: string;
+    addressline?: string;
+    city?: string;
+    country?: string;
+    email?: string;
 }
 
 export type PromissoryNoteW3C = SignedVerifiableCredential & {

@@ -16,7 +16,7 @@
     "check-types": "tsc --sourceMap false --noEmit",
     "dev": "run-s build:css dev:server",
     "dev:server": "cross-env NODE_ENV=development webpack-dev-server",
-    "storybook": "run-s build:css storybook:start",
+    "storybook": "rm -rf node_modules/.cache/storybook && run-s build:css storybook:start",
     "storybook:start": "storybook dev -p 6006",
     "storybook:build": "npm run build:css && storybook build -o docs",
     "build-storybook": "npm run build:css && storybook build"

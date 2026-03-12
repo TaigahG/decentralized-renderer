@@ -10,244 +10,230 @@ export const CertificateOfOriginTemplate: FunctionComponent<
     const data = getDocumentData(document) as CertificateOfOrigin;
 
     const {
-        // Identifiers
-        cooId,
-        issueDateTime,
-        firstSignatoryAuthentication, // Usually the Chamber's stamp/signature
-        signature, // Exporter's signature
+        documentId,
+        shipmentId,
+        certificateOfOriginNumber,
 
-        // Exporter
-        exporterName,
-        exporterLine1,
-        exporterLine2,
-        exporterCityName,
-        exporterPostcode,
-        exporterCountryCode,
-        exportCountry,
+        // --- Parties & Authorities ---
+        exporter: {
+            name: exporterName,
+            addressLine: exporterAddress,
+            city: exporterCity,
+            country: exporterCountry,
+            email: exporterEmail,
+        } = {},
+        certificateIssuer: {
+            name: issuerName,
+            addressLine: issuerAddress,
+            city: issuerCity,
+            country: issuerCountry,
+            email: issuerEmail,
+            seal: issuerSeal,
+        } = {},
+        managementAuthority: {
+            name: authorityName,
+            addressLine: authorityAddress,
+            city: authorityCity,
+            country: authorityCountry,
+            email: authorityEmail,
+            seal: authoritySeal,
+        } = {},
 
-        // Importer (Consignee)
-        importerName,
-        importerLine1,
-        importerLine2,
-        importerCityName,
-        importerPostcode,
-        importerCountryCode,
-        importCountry,
+        // --- Shipment Details ---
+        countryOrigin,
+        grossWeight,
 
-        // Logistics
-        loadingBaseportLocationName,
-        unloadingBaseportLocationName,
-        usedTransportMeansName, // Vessel Name
-        departureDateTime,
-
-        // Goods
-        includedConsignmentItems, // The description string
-        supplyChainConsignmentInformation, // Extra remarks
+        // --- Goods Details ---
+        goods = [],
     } = data;
 
-    // --- Helpers ---
-    const display = (value: any) => (value ? String(value) : "");
-
-    const formatDate = (dateStr?: string) => {
-        if (!dateStr) return "";
-        try {
-            return new Date(dateStr).toISOString().split("T")[0];
-        } catch (e) {
-            return dateStr;
-        }
-    };
-
-    const Label = ({ children }: { children: React.ReactNode }) => (
-        <div className="text-[9px] uppercase font-bold text-gray-500 mb-0.5 tracking-wider leading-none">
-            {children}
+    // Strict B&W Box Helper
+    const DataBox = ({ label, value, className = "", inverted = false, large = false }: { label: string; value?: string | React.ReactNode; className?: string; inverted?: boolean; large?: boolean }) => (
+        <div className={`p-4 border-r border-b border-black last:border-r-0 ${inverted ? "bg-black text-white" : "bg-white text-black"} ${className}`}>
+            <label className={`block text-[9px] uppercase font-bold mb-1 tracking-widest leading-none ${inverted ? "text-gray-400" : "text-gray-600"}`}>
+                {label}
+            </label>
+            <div className={`${large ? "text-xl md:text-2xl" : "text-sm"} font-bold uppercase leading-tight whitespace-pre-wrap break-words`}>
+                {value || "-"}
+            </div>
         </div>
     );
 
     return (
-        <Wrapper data-testid="certificate-of-origin-template">
-            <div className="max-w-[210mm] mx-auto bg-white text-black p-8 font-sans antialiased box-border">
+        <Wrapper>
+            <div className="max-w-4xl mx-auto bg-white font-sans text-black border-2 border-black my-10 relative overflow-hidden">
 
-                {/* Main Document Border */}
-                <div className="border-2 border-black">
-
-                    {/* Header & Title */}
-                    <div className="flex border-b border-black">
-                        {/* Left: Exporter (Box 1) */}
-                        <div className="w-1/2 border-r border-black p-3 h-40">
-                            <Label>1. Exporter (Name, Address, Country)</Label>
-                            <div className="mt-2 text-sm font-bold">{display(exporterName)}</div>
-                            <div className="text-xs mt-1">
-                                {display(exporterLine1)}<br />
-                                {exporterLine2 && <>{display(exporterLine2)}<br /></>}
-                                {display(exporterCityName)} {display(exporterPostcode)}<br />
-                                <span className="font-bold uppercase">{display(exportCountry || exporterCountryCode)}</span>
-                            </div>
-                        </div>
-
-                        {/* Right: Certificate Ref */}
-                        <div className="w-1/2 p-3 bg-gray-50 flex flex-col">
-                            <div className="flex-1">
-                                <Label>Reference No.</Label>
-                                <div className="text-xl font-mono font-bold">{display(cooId)}</div>
-                            </div>
-                            <div className="text-right mt-4">
-                                <h1 className="text-2xl font-bold uppercase tracking-tight text-gray-800">
-                                    Certificate of Origin
-                                </h1>
-                                <p className="text-[10px] uppercase font-bold text-gray-400">
-                                    Original
-                                </p>
-                            </div>
-                        </div>
+                {/* --- Header Section --- */}
+                <div className="flex justify-between items-start border-b-4 border-black mb-0 pt-6 pb-6 pl-6 pr-6">
+                    <div className="flex-1">
+                        <h1 className="text-4xl font-black uppercase tracking-tighter leading-none mb-2">
+                            Certificate of Origin
+                        </h1>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] border border-black px-2 py-1 inline-block">
+                            Blockchain-Verified Trade Document
+                        </p>
                     </div>
-
-                    {/* Consignee & Transport */}
-                    <div className="flex border-b border-black">
-                        {/* Left: Consignee (Box 2) */}
-                        <div className="w-1/2 border-r border-black p-3 h-40">
-                            <Label>2. Consignee (Name, Address, Country)</Label>
-                            <div className="mt-2 text-sm font-bold">{display(importerName)}</div>
-                            <div className="text-xs mt-1">
-                                {display(importerLine1)}<br />
-                                {importerLine2 && <>{display(importerLine2)}<br /></>}
-                                {display(importerCityName)} {display(importerPostcode)}<br />
-                                <span className="font-bold uppercase">{display(importCountry || importerCountryCode)}</span>
-                            </div>
-                        </div>
-
-                        {/* Right: Transport (Box 3) */}
-                        <div className="w-1/2 p-3 h-40 flex flex-col justify-between">
-                            <div>
-                                <Label>3. Transport Details (Optional)</Label>
-                                <div className="mt-2 text-xs">
-                                    <div className="flex mb-1">
-                                        <span className="w-24 text-gray-500">Mode/Means:</span>
-                                        <span className="font-bold uppercase">{display(usedTransportMeansName)}</span>
-                                    </div>
-                                    <div className="flex mb-1">
-                                        <span className="w-24 text-gray-500">Loading Port:</span>
-                                        <span>{display(loadingBaseportLocationName)}</span>
-                                    </div>
-                                    <div className="flex mb-1">
-                                        <span className="w-24 text-gray-500">Discharge Port:</span>
-                                        <span>{display(unloadingBaseportLocationName)}</span>
-                                    </div>
-                                    <div className="flex mb-1">
-                                        <span className="w-24 text-gray-500">Departure:</span>
-                                        <span>{formatDate(departureDateTime)}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="pt-2 border-t border-gray-200">
-                                <Label>Country of Origin</Label>
-                                <div className="text-sm font-bold uppercase">{display(exportCountry)}</div>
-                            </div>
-                        </div>
+                    <div className="text-right">
+                        <p className="text-[9px] font-bold uppercase tracking-widest mb-1">Certificate Number</p>
+                        <p className="text-2xl font-mono font-black tracking-widest bg-black text-white px-3 py-1">
+                            {certificateOfOriginNumber || "PENDING"}
+                        </p>
                     </div>
-
-                    {/* Remarks Section (Optional Box) */}
-                    {supplyChainConsignmentInformation && (
-                        <div className="border-b border-black p-2 bg-gray-50 text-xs">
-                            <Label>Remarks</Label>
-                            <div>{display(supplyChainConsignmentInformation)}</div>
-                        </div>
-                    )}
-
-                    {/* Goods Table Header (Box 5, 6, 7) */}
-                    <div className="flex border-b border-black bg-gray-100">
-                        <div className="w-1/6 p-2 border-r border-black"><Label>Item No.</Label></div>
-                        <div className="w-2/3 p-2 border-r border-black"><Label>Marks & Numbers / Description of Goods</Label></div>
-                        <div className="w-1/6 p-2 text-right"><Label>Quantity / Weight</Label></div>
-                    </div>
-
-                    {/* Goods Body */}
-                    <div className="border-b border-black min-h-[350px] flex">
-                        <div className="w-1/6 p-2 border-r border-black text-xs text-center">1</div>
-
-                        {/* The Main Description Area */}
-                        <div className="w-2/3 p-4 border-r border-black text-sm whitespace-pre-wrap font-mono leading-relaxed">
-                            {display(includedConsignmentItems) || "No goods description provided."}
-                        </div>
-
-                        <div className="w-1/6 p-2 text-xs text-right">
-                            {/* Since we don't have separate weight fields in the interface, we rely on the description string usually. 
-                    If specific weight fields existed, they would go here. */}
-                            <span className="italic text-gray-400">See Desc.</span>
-                        </div>
-                    </div>
-
-                    {/* Footer: Certification & Declaration */}
-                    <div className="flex h-60">
-                        {/* Left: Exporter Declaration (Box 11) */}
-                        <div className="w-1/2 border-r border-black p-4 flex flex-col justify-between">
-                            <div>
-                                <Label>11. Declaration by the Exporter</Label>
-                                <p className="text-[10px] mt-2 text-justify leading-tight">
-                                    The undersigned hereby declares that the above details and statements are correct;
-                                    that all the goods were produced in <strong>{display(exportCountry)}</strong> and that
-                                    they comply with the origin requirements specified for these goods.
-                                </p>
-                            </div>
-
-                            <div className="mt-4">
-                                <Label>Place and Date, Signature</Label>
-                                <div className="mt-1 font-medium text-xs">
-                                    {display(exporterCityName)}, {formatDate(issueDateTime)}
-                                </div>
-
-                                <div className="mt-4 h-16 border-b border-black relative">
-                                    {/* Digital Signature Placeholder */}
-                                    {signature && (
-                                        <div className="absolute bottom-0 left-0 text-xs italic text-gray-500">
-                                            [Digitally Signed by Exporter]
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="text-[10px] mt-1 font-bold">{display(exporterName)}</div>
-                            </div>
-                        </div>
-
-                        {/* Right: Certification (Box 12) */}
-                        <div className="w-1/2 p-4 flex flex-col justify-between bg-gray-50">
-                            <div>
-                                <Label>12. Certification</Label>
-                                <p className="text-[10px] mt-2 text-justify leading-tight">
-                                    It is hereby certified, on the basis of control carried out, that the declaration
-                                    by the exporter is correct.
-                                </p>
-                            </div>
-
-                            <div className="mt-4">
-                                <Label>Issuing Authority Signature & Stamp</Label>
-
-                                <div className="mt-4 h-24 border border-dashed border-gray-400 rounded flex items-center justify-center relative">
-                                    {/* Stamp Placeholder */}
-                                    <div className="text-gray-300 text-center font-bold uppercase rotate-12 text-xs">
-                                        Official Stamp<br />Issuing Authority
-                                    </div>
-
-                                    {/* Auth Code from data */}
-                                    {firstSignatoryAuthentication && (
-                                        <div className="absolute bottom-1 right-1 text-[8px] font-mono bg-white px-1 border border-gray-200">
-                                            Auth: {firstSignatoryAuthentication.substring(0, 10)}...
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="text-[10px] mt-2 text-center text-gray-500">
-                                    Authorized Signatory
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
 
-                <div className="mt-4 text-[9px] text-center text-gray-400">
-                    This digitally rendered Certificate of Origin is verified by TradeTrust.
+                {/* --- Top Grid: Exporter & Issuer (UN Layout Standard) --- */}
+                <div className="grid grid-cols-2 border-b-2 border-black">
+                    {/* Exporter (Top Left) */}
+                    <div className="border-r border-black p-4">
+                        <div className="flex items-center space-x-2 mb-3">
+                            <div className="w-3 h-3 bg-black"></div>
+                            <h3 className="text-xs font-black uppercase tracking-widest">1. Exporter</h3>
+                        </div>
+                        <div className="text-sm font-bold uppercase mb-1">{exporterName}</div>
+                        <div className="text-xs mb-2">
+                            {exporterAddress}<br />
+                            {exporterCity}, {exporterCountry}
+                        </div>
+                        {exporterEmail && <div className="text-[10px] font-mono text-gray-600">{exporterEmail}</div>}
+                    </div>
+
+                    {/* Issuing Body (Top Right) */}
+                    <div className="p-4 bg-gray-50">
+                        <div className="flex items-center space-x-2 mb-3">
+                            <div className="w-3 h-3 border-2 border-black"></div>
+                            <h3 className="text-xs font-black uppercase tracking-widest">2. Certificate Issuer</h3>
+                        </div>
+                        <div className="text-sm font-bold uppercase mb-1">{issuerName || "Chamber of Commerce"}</div>
+                        <div className="text-xs mb-2">
+                            {issuerAddress}<br />
+                            {issuerCity}, {issuerCountry}
+                        </div>
+                        {issuerEmail && <div className="text-[10px] font-mono text-gray-600">{issuerEmail}</div>}
+                    </div>
+                </div>
+
+                {/* --- Country of Origin (The most critical field) --- */}
+                <div className="grid grid-cols-1 border-b-2 border-black bg-black text-white p-6 text-center">
+                    <label className="block text-[10px] uppercase font-bold text-gray-400 mb-2 tracking-[0.2em]">
+                        3. Country of Origin
+                    </label>
+                    <div className="text-5xl font-black uppercase tracking-widest">
+                        {countryOrigin || "NOT SPECIFIED"}
+                    </div>
+                </div>
+
+                {/* --- Transport / Shipment Details --- */}
+                {/* {
+                    <div className="grid grid-cols-3 border-b-2 border-black">
+                    <DataBox label="4. Shipment ID / Reference" value={shipmentId} fontMono />
+                    <DataBox label="5. Document ID" value={documentId} fontMono />
+                    <DataBox label="6. Gross Weight" value={grossWeight} className="border-r-0" />
+                    </div>
+                } */}
+
+                {/* --- Goods Table --- */}
+                <div className="border-b-2 border-black min-h-[250px] flex flex-col">
+                    <div className="bg-gray-100 p-2 border-b border-black text-[9px] font-black uppercase tracking-widest flex items-center space-x-2">
+                        <span>7. Particulars of Goods</span>
+                    </div>
+                    <table className="w-full text-left table-fixed flex-1">
+                        <thead className="bg-white text-[9px] font-bold uppercase tracking-widest text-gray-500 border-b border-black">
+                            <tr>
+                                <th className="p-3 w-16 text-center border-r border-black">Item</th>
+                                <th className="p-3 w-3/4 border-r border-black">Marks, Numbers, Number and Kind of Packages, Description of Goods</th>
+                                <th className="p-3 w-1/4 text-center">Quantity / Packages</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-xs font-mono">
+                            {goods.length > 0 ? goods.map((item, i) => (
+                                <tr key={i} className="border-b border-gray-200 last:border-0 align-top">
+                                    <td className="p-3 text-center border-r border-black font-bold text-gray-500">{i + 1}</td>
+                                    <td className="p-3 border-r border-black whitespace-pre-wrap leading-relaxed">
+                                        {item.description}
+                                    </td>
+                                    <td className="p-3 text-center font-black text-sm">
+                                        {item.numberOfPackages}
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan={3} className="p-8 text-center text-gray-400 italic uppercase">No goods particulars provided</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* --- Certification & Stamps (Bottom Row) --- */}
+                <div className="grid grid-cols-2">
+                    {/* Exporter Declaration */}
+                    <div className="p-6 border-r border-black flex flex-col justify-between">
+                        <div>
+                            <h3 className="text-[10px] font-black uppercase tracking-widest mb-4">8. Declaration by the Issuer</h3>
+                            <p className="text-xs text-justify font-serif leading-relaxed mb-6">
+                                It is hereby declares that the above-mentioned goods were produced or manufactured in the country shown in box 3 and comply with the rules of origin governing international trade.
+                            </p>
+                        </div>
+                        <div className="mx-auto w-28 h-28">
+                            {(() => {
+                                const seal = issuerSeal;
+                                if (!seal) return "Digital Stamp Authenticated";
+                                if (seal.startsWith("http") || seal.startsWith("data:image")) {
+                                    return <img src={seal} alt="Authority Seal" className="w-full h-full object-contain" />;
+                                }
+                                return seal;
+                            })()}
+                        </div>
+                    </div>
+
+                    {/* Authority Certification */}
+                    <div className="p-6 bg-gray-50 flex flex-col justify-between relative overflow-hidden">
+                        <div>
+                            <div>
+                                <h3 className="text-[10px] font-black uppercase tracking-widest mb-4">9. Certification</h3>
+                                <p className="text-xs text-justify font-serif leading-relaxed mb-4">
+                                    It is hereby certified, on the basis of control carried out, that the declaration by the exporter is correct.
+                                </p>
+                            </div>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <div className="text-xs font-bold uppercase">{authorityName}</div>
+                                    <div className="text-[10px] text-gray-600">{authorityAddress}</div>
+                                    <div className="text-[10px] text-gray-600">{authorityCity}, {authorityCountry}</div>
+                                    <div className="text-[10px] text-gray-600 mb-6">{authorityEmail}</div>
+                                </div>
+                                <div>
+                                    {/* Seal Watermark/Placeholder */}
+                                    <div className="w-28 h-28 flex items-center justify-center pointer-events-none">
+                                        {(() => {
+                                            const seal = authoritySeal;
+                                            if (!seal) return "Digital Stamp Authenticated";
+                                            if (seal.startsWith("http") || seal.startsWith("data:image")) {
+                                                return <img src={seal} alt="Authority Seal" className="w-full h-full object-contain" />;
+                                            }
+                                            return seal;
+                                        })()}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* --- Footer & Authenticator --- */}
+                <div className="border-t-4 border-black p-4 flex justify-between items-center bg-black text-white mt-0">
+                    <div className="text-[9px] font-bold uppercase tracking-widest">
+                        UN/CEFACT International Certificate of Origin
+                    </div>
+                    <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                            <span className="text-[9px] font-bold uppercase">Chaindox Authenticated</span>
+                        </div>
+                    </div>
                 </div>
 
             </div>
         </Wrapper>
     );
-};
+}
