@@ -5,253 +5,141 @@ import { getDocumentData } from "../../../utils";
 import { ElectronicPromissoryNote, PromissoryNoteSchema } from "./types";
 
 export const PromissoryNoteTemplate: FunctionComponent<
-    TemplateProps<PromissoryNoteSchema>
+  TemplateProps<PromissoryNoteSchema>
 > = ({ document }) => {
-    const data = getDocumentData(document) as ElectronicPromissoryNote;
+  const data = getDocumentData(document) as ElectronicPromissoryNote;
 
-    const {
-        // Identifiers
-        promissoryNoteNumber,
-        // Dates & Places
-        issueDate,
-        issuePlace,
-        maturityDate,
-        // Maker
-        makerName,
-        makerAddress,
-        makerId,
-        // Payee
-        payeeName,
-        payeeAddress,
-        // Financials
-        principalAmount,
-        currency,
-        amountInWords,
-        interestRate,
-        totalAmountPayable,
-        // Bank Details (Domicile)
-        bankName,
-        bankAddress,
-        bankSwiftCode,
-        bankAccountNumber,
-        // Underlying Contract
-        contractReference,
-        // Negotiability
-        isNegotiable,
-        // Legal
-        governingLaw,
-        defaultClause,
-        // Witness & Notary
-        witnessName,
-        notaryName,
-        // Collateral
-        collateralDescription,
-    } = data;
+  const {
+    // --- Dates ---
+    issueDate,
+    paymentDueDate,
 
-    // --- Helpers ---
-    const display = (value: any) => (value ? String(value) : "");
+    // --- Parties ---
+    payee: {
+      name: payeeName,
+      addressline: payeeAddress,
+      city: payeeCity,
+      country: payeeCountry,
+      email: payeeEmail,
+    } = {},
+    drawer: { // The maker/issuer of the note
+      name: drawerName,
+      addressline: drawerAddress,
+      city: drawerCity,
+      country: drawerCountry,
+      email: drawerEmail,
+    } = {},
 
-    const formatDate = (dateStr?: string) => {
-        if (!dateStr) return "";
-        try {
-            const d = new Date(dateStr);
-            return d.toLocaleDateString("en-GB", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-            });
-        } catch (e) {
-            return dateStr;
-        }
-    };
+    // --- Issuance & Terms ---
+    placeOfIssue,
+    issuerStamp,
+    paymentTerm,
 
-    const formatMoney = (val?: number | string, curr?: string) => {
-        if (val === undefined || val === null) return "";
-        const num = Number(val);
-        const c = curr || "";
-        return isNaN(num) ? String(val) : `${c} ${num.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}`;
-    };
+    // --- Financials ---
+    monetaryAmount,
+  } = data;
 
-    const Label = ({ children }: { children: React.ReactNode }) => (
-        <div className="text-[9px] uppercase font-bold text-gray-500 mb-0.5 tracking-wider leading-none">
-            {children}
-        </div>
-    );
+  // Helper to format addresses cleanly
+  const formatAddress = (address?: string, city?: string, country?: string) => {
+    const parts = [address, city, country].filter(Boolean);
+    return parts.join(", ");
+  };
 
-    const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-        <h3 className="text-xs font-bold uppercase border-b border-black pb-1 mb-2 mt-4 text-gray-800">
-            {children}
-        </h3>
-    );
+  return (
+    <Wrapper>
+      <div className="max-w-4xl mx-auto p-1 bg-white font-serif text-black border-4 border-black my-12 relative shadow-lg">
+        {/* Inner Border for Traditional Look */}
+        <div className="border border-black p-8 md:p-12 relative">
+          
+          {/* Background Watermark (Subtle) */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none overflow-hidden">
+             <span className="text-[12rem] font-black uppercase text-center leading-none transform -rotate-12 whitespace-nowrap">
+                PROMISE<br/>TO PAY
+             </span>
+          </div>
 
-    return (
-        <Wrapper data-testid="promissory-note-template">
-            <div className="max-w-[210mm] mx-auto bg-white text-black p-12 font-serif antialiased box-border relative">
-
-                {/* Decorative Border */}
-                <div className="border-4 border-double border-gray-800 p-8 h-full min-h-[800px] relative">
-
-                    {/* Watermark-like background text */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none overflow-hidden select-none">
-                        <span className="text-[150px] font-bold transform -rotate-45">PROMISSORY</span>
-                    </div>
-
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <h1 className="text-4xl font-bold tracking-widest text-gray-900 uppercase mb-2">Promissory Note</h1>
-                        <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">
-                            {isNegotiable ? "Negotiable Instrument" : "Non-Negotiable Instrument"}
-                        </p>
-                    </div>
-
-                    {/* Key Details Bar */}
-                    <div className="flex justify-between items-end border-b-2 border-black pb-4 mb-8">
-                        <div>
-                            <Label>Note Number</Label>
-                            <div className="text-lg font-bold font-mono">{display(promissoryNoteNumber)}</div>
-                        </div>
-                        <div className="text-right">
-                            <Label>Principal Amount</Label>
-                            <div className="text-3xl font-bold font-mono">
-                                {formatMoney(principalAmount, currency)}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* The Promise (Core Legal Text) */}
-                    <div className="mb-8 text-justify leading-relaxed text-sm">
-                        <p className="mb-4">
-                            <strong>FOR VALUE RECEIVED</strong>, the undersigned <strong>{display(makerName)}</strong> ("Maker"),
-                            located at {display(makerAddress)}, hereby unconditionally promises to pay to the order of
-                            <strong> {display(payeeName)}</strong> ("Payee"), located at {display(payeeAddress)},
-                            the principal sum of <strong>{display(currency)} {display(amountInWords)}</strong>
-                            {interestRate ? ` together with interest thereon at the rate of ${interestRate}% per annum` : " (Interest Free)"}.
-                        </p>
-                        <p>
-                            Payment shall be made in full on or before <strong>{formatDate(maturityDate)}</strong> ("Maturity Date").
-                            This Note is issued at <strong>{display(issuePlace)}</strong> on <strong>{formatDate(issueDate)}</strong>.
-                        </p>
-                    </div>
-
-                    {/* Financial Details Grid */}
-                    <div className="grid grid-cols-2 gap-8 mb-6">
-                        {/* Left: Payment Instructions */}
-                        <div className="border p-4 bg-gray-50">
-                            <SectionTitle>Place of Payment (Domicile)</SectionTitle>
-                            <div className="space-y-2 text-sm">
-                                <div>
-                                    <Label>Bank Name</Label>
-                                    <div className="font-bold">{display(bankName)}</div>
-                                </div>
-                                <div>
-                                    <Label>Address</Label>
-                                    <div>{display(bankAddress)}</div>
-                                </div>
-                                <div className="flex gap-4">
-                                    <div>
-                                        <Label>SWIFT / BIC</Label>
-                                        <div className="font-mono">{display(bankSwiftCode)}</div>
-                                    </div>
-                                    <div>
-                                        <Label>Account No.</Label>
-                                        <div className="font-mono">{display(bankAccountNumber)}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Right: Summary */}
-                        <div className="border p-4 bg-gray-50 flex flex-col justify-between">
-                            <div>
-                                <SectionTitle>Payment Summary</SectionTitle>
-                                <div className="flex justify-between mb-1 text-sm">
-                                    <span>Principal:</span>
-                                    <span className="font-mono">{formatMoney(principalAmount, currency)}</span>
-                                </div>
-                                {interestRate && (
-                                    <div className="flex justify-between mb-1 text-sm text-gray-600">
-                                        <span>Interest ({interestRate}%):</span>
-                                        <span className="font-mono italic">As Calculated</span>
-                                    </div>
-                                )}
-                                <div className="flex justify-between pt-2 border-t border-black mt-2 font-bold text-sm">
-                                    <span>Total Due:</span>
-                                    <span className="font-mono">{formatMoney(totalAmountPayable || principalAmount, currency)}</span>
-                                </div>
-                            </div>
-                            {contractReference && (
-                                <div className="mt-4 pt-2 border-t border-gray-300">
-                                    <Label>Underlying Contract Ref</Label>
-                                    <div className="text-xs">{contractReference}</div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Clauses Section */}
-                    <div className="mb-8">
-                        <SectionTitle>Terms & Conditions</SectionTitle>
-                        <div className="text-xs text-justify text-gray-600 space-y-2">
-                            <p>
-                                <strong>GOVERNING LAW:</strong> This Note shall be governed by and construed in accordance with the laws of {display(governingLaw)}.
-                            </p>
-                            {defaultClause && (
-                                <p>
-                                    <strong>DEFAULT:</strong> {defaultClause}
-                                </p>
-                            )}
-                            {collateralDescription && (
-                                <p>
-                                    <strong>COLLATERAL:</strong> This Note is secured by: {collateralDescription}.
-                                </p>
-                            )}
-                            <p>
-                                <strong>WAIVER:</strong> Maker waives presentment, demand, protest, and notice of dishonor.
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Signatures Section */}
-                    <div className="mt-12">
-                        <div className="flex justify-between items-end gap-12">
-
-                            {/* Maker Signature */}
-                            <div className="flex-1">
-                                {/*                                 
-                                <Label>Signed by Maker</Label>
-                                <div className="h-16 border-b border-black mb-2 flex items-end pb-2">
-                                    <span className="text-3xl font-script opacity-60">
-                                        //Visual placeholder for digital signature if available
-                                        Signed
-                                    </span>
-                                </div> 
-                                */}
-                                <div className="font-bold text-sm">{display(makerName)}</div>
-                                <div className="text-xs text-gray-500">Authorized Signatory</div>
-                                {makerId && <div className="text-[10px] text-gray-400">ID: {makerId}</div>}
-                            </div>
-
-                            {/* Witness / Notary */}
-                            {(witnessName || notaryName) && (
-                                <div className="flex-1">
-                                    <Label>Witness / Notary</Label>
-                                    <div className="h-16 border-b border-black mb-2 flex items-end pb-2">
-                                        {/* Seal placeholder */}
-                                        {notaryName && (
-                                            <div className="border-2 border-gray-300 rounded-full w-12 h-12 flex items-center justify-center text-[8px] text-gray-300 uppercase text-center leading-none rotate-12 ml-auto mr-4">
-                                                Notary Seal
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="font-bold text-sm">{display(witnessName || notaryName)}</div>
-                                    <div className="text-xs text-gray-500">{notaryName ? "Notary Public" : "Witness"}</div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
+          {/* --- Header: Amount and Date --- */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 border-b-2 border-black pb-6 relative z-10">
+             <div>
+                <label className="block text-[10px] uppercase font-sans font-bold tracking-widest text-gray-500 mb-1">Place & Date of Issue</label>
+                <div className="text-lg font-bold uppercase tracking-wide">
+                   {placeOfIssue || "City, Country"}, {issueDate || "YYYY-MM-DD"}
                 </div>
-            </div>
-        </Wrapper>
-    );
+             </div>
+             <div className="mt-4 md:mt-0 text-right">
+                <label className="block text-[10px] uppercase font-sans font-bold tracking-widest text-gray-500 mb-1">Principal Amount</label>
+                <div className="text-3xl font-black font-mono tracking-tighter border-2 border-black px-4 py-2 inline-block bg-gray-50">
+                   {monetaryAmount != null ? monetaryAmount.toLocaleString(undefined, { minimumFractionDigits: 2 }) : "0.00"}
+                </div>
+             </div>
+          </div>
+
+          {/* --- Title --- */}
+          <div className="text-center mb-10 relative z-10 pt-6">
+             <h1 className="text-4xl md:text-5xl font-black uppercase tracking-[0.2em] text-black">
+                Promissory Note
+             </h1>
+          </div>
+
+          {/* --- The Promise (Legal Body) --- */}
+          <div className="text-lg md:text-xl leading-loose text-justify mb-12 relative z-10 pb-6">
+             <span className="font-bold uppercase tracking-widest text-sm mr-4 font-sans">For Value Received,</span>
+             the undersigned Maker, <strong>{drawerName || "[Maker Name]"}</strong>, hereby unconditionally promises to pay to the order of <strong>{payeeName || "[Payee Name]"}</strong> (the "Payee"), the principal sum of <strong>{monetaryAmount != null ? monetaryAmount.toLocaleString(undefined, { minimumFractionDigits: 2 }) : "[Amount]"}</strong>.
+             
+             <br/><br/>
+             Payment shall be due and payable <span className="underline decoration-1 underline-offset-4 font-bold">{paymentTerm || "as per agreed terms"}</span>, on or before the due date of <strong>{paymentDueDate || "[Date]"}</strong>.
+             
+             <br/><br/>
+             All payments under this Note shall be made in immediately available funds at the address of the Payee or at such other place as the Payee may designate in writing. This Note constitutes a primary, absolute, and unconditional obligation of the Maker.
+          </div>
+
+          {/* --- Parties Detailed Information --- */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 border-t border-b border-black pt-6 pb-6 relative z-10 font-sans">
+             {/* Maker/Drawer Info */}
+             <div>
+                <h3 className="text-xs font-black uppercase tracking-widest mb-3 border-b border-black pb-1 inline-block">Details of Maker (Drawer)</h3>
+                <div className="text-sm font-bold uppercase">{drawerName}</div>
+                <div className="text-xs mt-1 leading-relaxed text-gray-800">
+                   {formatAddress(drawerAddress, drawerCity, drawerCountry)}
+                </div>
+                {drawerEmail && <div className="text-xs mt-1 text-gray-600 font-mono">Email: {drawerEmail}</div>}
+             </div>
+
+             {/* Payee Info */}
+             <div>
+                <h3 className="text-xs font-black uppercase tracking-widest mb-3 border-b border-black pb-1 inline-block">Details of Payee</h3>
+                <div className="text-sm font-bold uppercase">{payeeName}</div>
+                <div className="text-xs mt-1 leading-relaxed text-gray-800">
+                   {formatAddress(payeeAddress, payeeCity, payeeCountry)}
+                </div>
+                {payeeEmail && <div className="text-xs mt-1 text-gray-600 font-mono">Email: {payeeEmail}</div>}
+             </div>
+          </div>
+
+          {/* --- Signatures & Stamps --- */}
+          <div className="flex flex-col md:flex-row justify-between items-end relative z-10 pt-6">
+             {/* Issuer Stamp Area */}
+             {/* <div className="w-full md:w-1/3 mb-8 md:mb-0">
+                <div className="w-32 h-32 border-2 border-dashed border-gray-400 rounded-full flex flex-col items-center justify-center text-center p-2 mx-auto md:mx-0 relative">
+                   <div className="text-[10px] font-bold uppercase text-gray-400 tracking-widest mb-1">Official<br/>Stamp</div>
+                   <div className="text-xs font-serif font-bold text-black border-t border-black pt-1 px-2">
+                     {issuerStamp || "VALIDATED"}
+                   </div>
+                </div>
+             </div> */}
+
+             {/* Signature Area */}
+             <div className="w-full md:w-1/2 text-left">
+                <label className="block text-[10px] uppercase font-sans font-bold tracking-widest text-gray-500 mb-6">Issued By (Maker)</label>
+                <div className="font-script text-3xl mb-2 pr-4">Digitally Signed</div>
+                <div className="h-px bg-black w-full mb-2"></div>
+                <div className="text-xs font-bold uppercase tracking-widest font-sans">{drawerName}</div>
+                <div className="text-[10px] uppercase text-gray-500 font-sans mt-1">Power by Chaindox</div>
+             </div>
+          </div>
+
+        </div>
+      </div>
+    </Wrapper>
+  );
 };

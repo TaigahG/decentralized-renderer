@@ -4,270 +4,227 @@ import { Wrapper } from "../../../core/Wrapper";
 import { getDocumentData } from "../../../utils";
 import { BillOfLadingDocument, BillOfLadingSchema } from "./types";
 
-/**
- * Professional Monochrome Bill of Lading Template
- * Designed for printability and industry standards (UN Layout Key style)
- */
 export const BillOfLadingTemplate: FunctionComponent<
   TemplateProps<BillOfLadingSchema>
 > = ({ document }) => {
   const data = getDocumentData(document) as BillOfLadingDocument;
 
   const {
-    bolId,
-    documentIdentifier,
-    bookingReference,
-    houseWaybillId,
-    transportContractNumber,
+    // --- Document Identifiers ---
     contractNumber,
-    freightForwarderReference,
+
+    // --- Dates ---
     issueDate,
-    loadingDate,
-    estimatedDeparture,
-    actualDepartureDate,
-    estimatedArrival,
-    actualArrivalDate,
-    buyerName,
-    buyerAddress,
-    consignorName,
-    consignorAddress,
-    consigneeName,
-    consigneeAddress,
-    carrierName,
-    carrierLicenseNumber,
-    notifyPartyName,
-    notifyPartyContact,
-    despatchAddress,
-    despatchCountryCode,
-    deliveryAddress,
-    deliveryCountryCode,
-    unloadingPortCode,
-    unloadingCountry,
-    exportationCountry,
-    originCountry,
-    goodsDescription,
-    packagingType,
-    shippingMarks,
-    netWeight,
-    journeyIdentifier,
-    transportMeansId,
-    vehicleRegistration,
-    containerSizeType,
-    containerStatus,
-    equipmentIdentifier,
+    consignmentLoadingDate,
+
+    // --- Parties ---
+    carrier: {
+      name: carrierName,
+      addressline: carrierAddress,
+      city: carrierCity,
+      country: carrierCountry,
+      email: carrierEmail,
+    } = {},
+    consignor: {
+      name: consignorName,
+      addressline: consignorAddress,
+      city: consignorCity,
+      country: consignorCountry,
+      email: consignorEmail,
+    } = {},
+    freightPayer: {
+      name: payerName,
+      addressline: payerAddress,
+      city: payerCity,
+      country: payerCountry,
+      email: payerEmail,
+    } = {},
+
+    // --- Routing & Contract Details ---
+    baseportUnloadingLocation,
+    transportContractDocumentConditions,
+
+    // --- Weights & Measures ---
+    grossWeight,
+    volume,
+
+    // --- Goods Details ---
+    goods = [],
+
+    // --- Equipment & Transport Details ---
+    container: {
+      size: containerSize,
+      type: containerType,
+    } = {},
+    fullOrEmpty,
+    transportMeansIdentifier, // Often the Vessel/Voyage
+    vehicleRegistrationNumber,
     sealIdentifier,
-    tradeTermsCode,
-    tradeTermsDescription,
-    freightCharges,
-    collectCharges,
-    prepaidAmount,
   } = data;
 
-  // --- Helpers ---
-  const display = (value: any) => (value ? String(value) : "");
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "";
-    return new Date(dateStr).toISOString().split("T")[0];
-  };
-  const formatMoney = (val?: string | number) => {
-    if (val === undefined || val === null) return "";
-    return `$${Number(val).toFixed(2)}`;
-  };
-
-  // Reusable Label Component for consistency
-  const Label = ({ children }: { children: React.ReactNode }) => (
-    <div className="text-[10px] uppercase font-bold text-gray-500 mb-0.5 tracking-wider">
-      {children}
-    </div>
-  );
-
-  // Reusable Field Component
-  const Field = ({ label, value, className = "" }: any) => (
-    <div className={`mb-2 ${className}`}>
-      <Label>{label}</Label>
-      <div className="text-xs font-medium text-black min-h-[1rem] break-words">
-        {display(value)}
+  // Strict B&W Box Helper
+  const DataBox = ({ label, value, className = "", inverted = false, fontMono = false }: { label: string; value?: string | React.ReactNode; className?: string; inverted?: boolean; fontMono?: boolean }) => (
+    <div className={`p-3 border-r border-b border-black last:border-r-0 ${inverted ? "bg-black text-white" : "bg-white text-black"} ${className}`}>
+      <label className={`block text-[9px] uppercase font-bold mb-1 tracking-widest leading-none ${inverted ? "text-gray-400" : "text-gray-600"}`}>
+        {label}
+      </label>
+      <div className={`text-sm font-bold uppercase leading-tight whitespace-pre-wrap break-words ${fontMono ? "font-mono" : ""}`}>
+        {value || "-"}
       </div>
     </div>
   );
 
   return (
-    <Wrapper data-testid="bill-of-lading-template">
-      <div className="max-w-[210mm] mx-auto bg-white text-black p-8 font-sans antialiased">
-        {/* Main Document Border */}
-        <div className="border-2 border-black">
-          
-          {/* Header Row: Shipper (Left) & Reference (Right) */}
-          <div className="flex border-b border-black">
-            {/* Left Column: Parties */}
-            <div className="w-1/2 border-r border-black">
-              <div className="p-2 border-b border-black h-32">
-                <Label>Shipper / Exporter</Label>
-                <div className="text-sm font-bold">{display(consignorName)}</div>
-                <div className="text-xs whitespace-pre-wrap">{display(consignorAddress)}</div>
-              </div>
-              
-              <div className="p-2 border-b border-black h-32">
-                <Label>Consignee</Label>
-                <div className="text-sm font-bold">{display(consigneeName)}</div>
-                <div className="text-xs whitespace-pre-wrap">{display(consigneeAddress)}</div>
-              </div>
+    <Wrapper>
+      <div className="max-w-4xl mx-auto bg-white font-sans text-black border-2 border-black my-10 relative overflow-hidden">
 
-              <div className="p-2 h-32">
-                <Label>Notify Party</Label>
-                <div className="text-sm font-bold">{display(notifyPartyName)}</div>
-                <div className="text-xs whitespace-pre-wrap">{display(notifyPartyContact)}</div>
-              </div>
-            </div>
-
-            {/* Right Column: References & Header Info */}
-            <div className="w-1/2 flex flex-col">
-              <div className="p-4 border-b-2 border-black flex justify-between items-center bg-gray-50">
-                <div>
-                  <h1 className="text-2xl font-bold tracking-tight">BILL OF LADING</h1>
-                  <span className="text-[10px] font-bold text-gray-500 uppercase">Original</span>
-                </div>
-                <div className="text-right">
-                  <Label>Bill of Lading No.</Label>
-                  <div className="text-lg font-mono font-bold">{display(bolId)}</div>
-                </div>
-              </div>
-
-              <div className="flex-1 p-2">
-                <div className="grid grid-cols-2 gap-4">
-                   <Field label="Booking Reference" value={bookingReference} />
-                   <Field label="Document ID" value={documentIdentifier} />
-                   <Field label="Export References" value={transportContractNumber} />
-                   <Field label="Contract Number" value={contractNumber} />
-                </div>
-                
-                <div className="mt-4 pt-4 border-t border-gray-300">
-                  <Label>Carrier</Label>
-                  <div className="text-sm font-bold uppercase">{display(carrierName)}</div>
-                  {carrierLicenseNumber && (
-                    <div className="text-xs text-gray-600">License: {carrierLicenseNumber}</div>
-                  )}
-                </div>
-              </div>
-            </div>
+        {/* --- Header Section --- */}
+        <div className="flex justify-between items-start border-b-4 border-black p-6 mb-0">
+          <div className="flex-1">
+            <h1 className="text-4xl font-black uppercase tracking-tighter leading-none mb-2">
+              Bill of Lading
+            </h1>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] border border-black px-2 py-1 inline-block">
+              Negotiable Transport Document
+            </p>
           </div>
-
-          {/* Logistics Row: Vessel & Ports */}
-          <div className="flex border-b border-black divide-x divide-black">
-            <div className="w-1/4 p-2">
-              <Field label="Pre-Carriage By" value={transportMeansId} />
-            </div>
-            <div className="w-1/4 p-2">
-              <Field label="Place of Receipt" value={despatchAddress} />
-            </div>
-            <div className="w-1/4 p-2">
-              <Field label="Vessel / Voyage No." value={`${display(journeyIdentifier)}`} />
-            </div>
-            <div className="w-1/4 p-2">
-              <Field label="Port of Loading" value={loadingDate ? `${formatDate(loadingDate)}` : "See Below"} />
-            </div>
-          </div>
-
-          <div className="flex border-b border-black divide-x divide-black">
-             <div className="w-1/2 p-2">
-                <Field label="Port of Discharge" value={unloadingPortCode} />
-             </div>
-             <div className="w-1/2 p-2">
-                <Field label="Place of Delivery" value={deliveryAddress} />
-             </div>
-          </div>
-
-          {/* Main Cargo Table Area */}
-          <div className="border-b border-black min-h-[300px]">
-             {/* Table Headers */}
-             <div className="flex border-b border-black bg-gray-100">
-                <div className="w-1/4 p-2 border-r border-black"><Label>Marks & Nos / Container No.</Label></div>
-                <div className="w-1/4 p-2 border-r border-black"><Label>No. & Kind of Packages</Label></div>
-                <div className="w-1/3 p-2 border-r border-black"><Label>Description of Goods</Label></div>
-                <div className="w-1/6 p-2 text-right"><Label>Gross Weight (KG)</Label></div>
-             </div>
-
-             {/* Table Row (Single row due to flat data structure) */}
-             <div className="flex items-start">
-                {/* Marks & Container Info */}
-                <div className="w-1/4 p-2 text-xs border-r border-black min-h-[250px] space-y-4">
-                   <div>
-                     <span className="font-bold block mb-1">Marks:</span>
-                     {display(shippingMarks) || "N/M"}
-                   </div>
-                   <div className="pt-4 border-t border-dashed border-gray-300">
-                      <span className="font-bold block mb-1">Container:</span>
-                      {display(equipmentIdentifier)} <br/>
-                      {containerSizeType && <span className="text-gray-500">{containerSizeType}</span>}
-                   </div>
-                   <div>
-                      <span className="font-bold block mb-1">Seal:</span>
-                      {display(sealIdentifier)}
-                   </div>
-                </div>
-
-                {/* Packages */}
-                <div className="w-1/4 p-2 text-xs border-r border-black min-h-[250px]">
-                   <div className="font-bold text-sm">1</div> {/* Assumed 1 shipment lot */}
-                   <div>{display(packagingType)}</div>
-                </div>
-
-                {/* Description */}
-                <div className="w-1/3 p-2 text-xs border-r border-black min-h-[250px]">
-                   <p className="uppercase font-medium">{display(goodsDescription)}</p>
-                   {tradeTermsCode && (
-                     <div className="mt-4 text-[10px] text-gray-500">
-                       Incoterms: {tradeTermsCode} - {tradeTermsDescription}
-                     </div>
-                   )}
-                </div>
-
-                {/* Weight */}
-                <div className="w-1/6 p-2 text-xs text-right font-mono">
-                   {display(netWeight)}
-                </div>
-             </div>
-          </div>
-
-          {/* Bottom Section: Charges & Dates */}
-          <div className="flex border-b border-black">
-             {/* Left: Freight Charges */}
-             <div className="w-1/2 border-r border-black p-2">
-                <Label>Freight & Charges</Label>
-                <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                   <div className="text-gray-600">Freight:</div>
-                   <div className="text-right font-mono">{formatMoney(freightCharges)}</div>
-                   
-                   <div className="text-gray-600">Prepaid:</div>
-                   <div className="text-right font-mono">{formatMoney(prepaidAmount)}</div>
-                   
-                   <div className="text-gray-600 font-bold">Collect:</div>
-                   <div className="text-right font-mono font-bold">{formatMoney(collectCharges)}</div>
-                </div>
-             </div>
-
-             {/* Right: Dates & Signature Placeholder */}
-             <div className="w-1/2 p-2 relative">
-                <div className="mb-4">
-                  <Label>Place and Date of Issue</Label>
-                  <div className="text-sm">
-                    {originCountry || "Unknown"}, {formatDate(issueDate)}
-                  </div>
-                </div>
-                {/*
-                <div className="mt-8 border-t border-black pt-2">
-                   <Label>Signed for the Carrier</Label>
-                   <div className="h-12"></div> // this is for the signed
-                   <div className="text-[10px] text-center italic">As Agent / Master</div>
-                </div>
-                */}
-             </div>
+          <div className="text-right">
+            <p className="text-[9px] font-bold uppercase tracking-widest mb-1">B/L Number</p>
+            <p className="text-2xl font-mono font-black tracking-widest border border-black text-black px-3 py-1">
+              {contractNumber || "DRAFT"}
+            </p>
           </div>
         </div>
 
-        {/* Footer / Disclaimer */}
-        <div className="mt-4 text-[10px] text-justify text-gray-500 leading-tight">
-           RECEIVED by the Carrier the Goods as specified above in apparent good order and condition unless otherwise stated, to be transported to such place as agreed, authorized or permitted herein and subject to all the terms and conditions appearing on the front and reverse of this Bill of Lading to which the Merchant agrees by accepting this Bill of Lading, any local privileges and customs notwithstanding.
+        {/* --- Parties Grid (Consignor & Carrier) --- */}
+        <div className="grid grid-cols-3 border-b-2 border-black">
+          {/* Consignor (Shipper) */}
+          <div className="border-r border-black p-4">
+            <div className="flex items-center space-x-2 mb-3">
+              <div className="w-3 h-3 bg-black"></div>
+              <h3 className="text-xs font-black uppercase tracking-widest">Shipper / Consignor</h3>
+            </div>
+            <div className="text-sm font-bold uppercase mb-1">{consignorName}</div>
+            <div className="text-xs mb-2 leading-relaxed">
+              {consignorAddress}<br />
+              {consignorCity}, {consignorCountry}
+            </div>
+            {consignorEmail && <div className="text-[10px] font-mono text-gray-700 mt-2">Email: {consignorEmail}</div>}
+          </div>
+
+          {/* Carrier */}
+          <div className="p-4 border-r border-black">
+            <div className="flex items-center space-x-2 mb-3">
+              <div className="w-3 h-3 border-2 border-black"></div>
+              <h3 className="text-xs font-black uppercase tracking-widest">Carrier</h3>
+            </div>
+            <div className="text-sm font-bold uppercase mb-1">{carrierName}</div>
+            <div className="text-xs mb-2 leading-relaxed">
+              {carrierAddress}<br />
+              {carrierCity}, {carrierCountry}
+            </div>
+            {carrierEmail && <div className="text-[10px] font-mono text-gray-700 mt-2">Email: {carrierEmail}</div>}
+          </div>
+
+          {/* Freight Payer */}
+          <div className="p-4">
+            <div className="flex items-center space-x-2 mb-3">
+              <div className="w-3 h-3 border-2 border-black border-dashed"></div>
+              <h3 className="text-xs font-black uppercase tracking-widest">Freight Payer</h3>
+            </div>
+            <div className="text-sm font-bold uppercase mb-1">{payerName || "-"}</div>
+            <div className="text-xs mb-2 leading-relaxed">
+              {payerAddress && <>{payerAddress}<br /></>}
+              {(payerCity || payerCountry) && <>{[payerCity, payerCountry].filter(Boolean).join(", ")}</>}
+            </div>
+            {payerEmail && <div className="text-[10px] font-mono text-gray-700 mt-2">Email: {payerEmail}</div>}
+          </div>
+        </div>
+
+        {/* --- Routing & Transport Details --- */}
+        <div className="grid grid-cols-4 border-b-2 border-black bg-gray-100">
+          <DataBox label="Vessel / Voyage (Means)" value={transportMeansIdentifier} className="col-span-2 bg-transparent" />
+          <DataBox label="Port of Discharge" value={baseportUnloadingLocation} className="col-span-2 border-r-0 bg-transparent" />
+        </div>
+        <div className="grid grid-cols-4 border-b-2 border-black">
+          <DataBox label="Loading Date" value={consignmentLoadingDate} fontMono />
+          <DataBox label="Issue Date" value={issueDate} fontMono />
+          <DataBox label="Vehicle Reg No." value={vehicleRegistrationNumber} fontMono />
+        </div>
+
+        {/* --- Equipment / Container Info --- */}
+        <div className="grid grid-cols-4 border-b-2 border-white bg-black text-white">
+           <DataBox label="Container Type" value={`${containerSize || ""} ${containerType || ""}`.trim()} inverted />
+           <div className="p-3 border-r border-white">
+             <label className="block text-[9px] uppercase font-bold mb-1 tracking-widest text-gray-400">Load Status</label>
+             <div className="text-sm font-bold uppercase tracking-widest border border-white px-2 py-0.5 inline-block">
+               {fullOrEmpty || "FCL"}
+             </div>
+           </div>
+           <DataBox label="Seal Number" value={sealIdentifier} fontMono inverted className="col-span-2 border-r-0" />
+        </div>
+
+        {/* --- Goods / Cargo Table --- */}
+        <div className="border-b-2 border-black min-h-[250px] flex flex-col">
+          <div className="bg-gray-100 p-2 text-[9px] font-black uppercase tracking-widest border-b border-black">
+            Particulars Furnished by Shipper
+          </div>
+          <table className="w-full text-left table-fixed flex-1">
+            <thead className="bg-white text-[9px] font-bold uppercase tracking-widest text-gray-600 border-b border-black">
+              <tr>
+                <th className="p-3 w-16 text-center border-r border-black">Item</th>
+                <th className="p-3 w-7/12 border-r border-black">Description of Goods</th>
+                <th className="p-3 w-2/12 text-center border-r border-black">HS Code</th>
+                <th className="p-3 w-2/12 text-center">Pkgs</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm font-mono">
+              {goods.length > 0 ? goods.map((item, i) => (
+                <tr key={i} className="border-b border-gray-200 last:border-0 align-top">
+                  <td className="p-4 text-center border-r border-black font-bold text-gray-400">{i + 1}</td>
+                  <td className="p-4 border-r border-black whitespace-pre-wrap leading-relaxed uppercase font-sans font-bold text-xs">
+                    {item.description}
+                  </td>
+                  <td className="p-4 text-center border-r border-black text-[10px]">
+                    {item.hsCode || "-"}
+                  </td>
+                  <td className="p-4 text-center font-black text-lg">
+                    {item.numberOfPackages}
+                  </td>
+                </tr>
+              )) : (
+                <tr>
+                  <td colSpan={4} className="p-8 text-center text-gray-400 italic uppercase font-sans text-xs">No goods items declared</td>
+                </tr>
+              )}
+            </tbody>
+            {/* Totals Footer */}
+            {goods.length > 0 && (
+              <tfoot className="bg-gray-100 border-t border-black font-bold">
+                <tr>
+                  <td colSpan={3} className="p-3 text-right text-[10px] uppercase tracking-widest border-r border-black">Total Packages</td>
+                  <td className="p-3 text-center text-lg font-black">
+                    {goods.reduce((acc, curr) => acc + (curr.numberOfPackages || 0), 0)}
+                  </td>
+                </tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+
+        {/* --- Summary Weights --- */}
+        <div className="grid grid-cols-2 border-b-2 border-black">
+          <DataBox label="Total Gross Weight" value={grossWeight ? `${grossWeight}` : "N/A"} fontMono />
+          <DataBox label="Total Volume" value={volume ? `${volume}` : "N/A"} fontMono className="border-r-0" />
+        </div>
+
+        {/* --- Legal Declaration & Conditions --- */}
+        <div className="p-4 border-b border-black bg-gray-50 text-[10px] text-justify font-serif leading-relaxed">
+          <span className="font-bold uppercase font-sans mr-2">Received:</span>
+          by the Carrier from the Shipper in apparent good order and condition (unless otherwise noted herein) the total number or quantity of Containers or other packages or units indicated above. Subject to all the terms and conditions hereof (INCLUDING THE TERMS AND CONDITIONS ON THE REVERSE HEREOF AND THE TERMS AND CONDITIONS OF THE CARRIER'S APPLICABLE TARIFF).
+          <div className="mt-2 font-mono text-[9px] uppercase">
+            Contract Conditions: {transportContractDocumentConditions || "AS PER CARRIER STANDARD TARIFF"}
+          </div>
         </div>
       </div>
     </Wrapper>

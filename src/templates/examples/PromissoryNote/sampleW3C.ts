@@ -3,7 +3,7 @@ import { PromissoryNoteW3C } from "./types";
 export const PromissoryNoteSampleW3C: PromissoryNoteW3C = {
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
-    "https://chaindox.com/contexts/electronic.json",
+    "https://chaindox.com/contexts/promissory-note.json",
     "https://trustvc.io/context/attachments-context.json",
     "https://trustvc.io/context/transferable-records-context.json",
     "https://trustvc.io/context/render-method-context-v2.json",
@@ -13,51 +13,34 @@ export const PromissoryNoteSampleW3C: PromissoryNoteW3C = {
     "VerifiableCredential"
   ],
   credentialSubject: {
-    epnId: "EPN-1767261814",
-    promissoryNoteNumber: "123",
-    documentIdentifier: "123",
-    issueDate: "2026-01-01T16:00:00.000Z",
-    issuePlace: "Indonesia",
-    maturityDate: "2026-01-04T16:00:00.000Z",
-    paymentDueDate: "2026-01-05T16:00:00.000Z",
-    makerName: "Gita Pradnya",
-    makerAddress: "Tukad Badung 20",
-    makerId: "456",
-    makerTaxId: "456",
-    makerContact: "Gita@gmail.com",
-    payeeName: "Simon Hopgood",
-    payeeAddress: "Sanur number 14",
-    payeeId: "789",
-    payeeBankAccount: "87986532",
-    beneficiaryName: "Gita Pradnya",
-    beneficiaryAddress: "Tukad badung 20",
-    beneficiaryAccount: "Gita@gmail.com",
-    principalAmount: 1500,
-    totalAmountPayable: 1515,
-    amountInWords: "One Thousand Five Hundred",
-    currency: "USD",
-    interestRate: 1,
-    interestCalculationMethod: "-",
-    paymentTerms: "Net 7 / Net 10",
-    paymentMethod: "Bank Transfer / Wire Transfer",
-    paymentPlace: "Online",
-    paymentInstructions: "stright transfer",
-    bankName: "OCBC",
-    bankAddress: "1234567890",
-    bankSwiftCode: "7756",
-    bankAccountNumber: "876520",
-    bankRoutingNumber: "887766",
-    isNegotiable: false,
-    isTransferable: true,
-    transferRestrictions: "none",
-    governingLaw: "none",
-    disputeResolution: "none",
-    termsAndConditions: "none"
+    type: "PromissoryNote",
+    documentId: "PN-PS5-2024-9090",
+    shipmentId: "SHP-SONY-US-112233",
+    issueDate: "2024-03-01",
+    paymentDueDate: "2024-05-30",
+    payee: {
+      name: "Sony Interactive Entertainment LLC",
+      addressline: "2207 Bridgepointe Pkwy",
+      city: "San Mateo",
+      country: "USA",
+      email: "receivables@playstation.com"
+    },
+    drawer: {
+      name: "Global Gaming Retailers Inc.",
+      addressline: "700 GameStop Way",
+      city: "Dallas",
+      country: "USA",
+      email: "ap@globalgamingretail.com"
+    },
+    placeOfIssue: "Dallas, TX",
+    issuerStamp: "GGR-FINANCE-STAMP-AUTH",
+    paymentTerm: "Net 90 Days for 3,000 units of PlayStation 5 Consoles",
+    monetaryAmount: 1350000
   },
-  validUntil: "2026-04-01T10:11:24.844Z",
+  validUntil: "2026-05-27T06:36:55.607Z",
   renderMethod: [
     {
-      id: "https://decentralizedrenderer.netlify.app/",
+      id: "https://decentralizedrenderer.netlify.app",
       type: "EMBEDDED_RENDERER",
       templateName: "ELECTRONIC_PROMISSORY_NOTE"
     }
@@ -69,17 +52,17 @@ export const PromissoryNoteSampleW3C: PromissoryNoteW3C = {
       chainId: 50
     },
     tokenRegistry: "0x798306062beA12Cd9196A98a2cAF3Df7cFD1DC9e",
-    tokenId: "9f5efe92382d4af5e683f66f23835be73bb17e5c6b95d48c009ea34dc1844e79"
+    tokenId: "88449241b36a25ddaf87c5b463f202da46f599790050b16aadbaacd158466f0c"
   },
   issuer: "did:web:chaindox.com",
-  validFrom: "2026-01-01T10:11:25.464Z",
-  id: "urn:uuid:019b790a-6eab-7887-b978-2fca4795a987",
+  validFrom: "2026-02-27T06:36:56.306Z",
+  id: "urn:uuid:019c9dd0-8c79-711d-b535-d03cfb1dd695",
   proof: {
     type: "DataIntegrityProof",
-    created: "2026-01-01T10:11:25Z",
+    created: "2026-02-27T06:36:56Z",
     verificationMethod: "did:web:chaindox.com#keys-1",
     cryptosuite: "ecdsa-sd-2023",
     proofPurpose: "assertionMethod",
-    proofValue: "u2V0AhVhAi692HWVzzh1ce0M7QVHefPgBI35_gQsAQM8YhUuWSuff26wy16sNPBnjvqJWg0MQW8P_k3xWx2e3ACN0X7oEdVgjgCQDoqxGFNRSro49Ua8c0A23fu0QOQEdZe2sEV94Ukvb8VhYIKJBccq6ERWRhTXgxSnry3AihQb6yiDNiK23lYfMg0WmmDRYQL8buwpkyEln8xqTHj7cRG0iLCSL918_TMu6IZbfc3ZUVCNL3u1FhYh_5UPBBLrYhsHrdGpLdUKrh8kjxGgvOmtYQEUpttT0iTG-tc34-eeIOhpLJ5P4RB8FSuNvb_RjyoLK2MyM1krO5PQNKrDkmM1zpaSg_qwFmFIBam1Xlh04HwdYQA5mmk3gft1usZaIKvpsj1MR8kZtWZEUUsbzkqPIXGzHC3dt9N21VVk--Gf7P5RlFxSaA7xBbNIekFQYCerMO25YQOi5i1M-ba6UKMF4Vtm1Bft6zkmC0vHgfBGAvqpCPLWlZ7b8JyZl041drC8vOsxiOswU0ukjZMiXzwYhx_vnrexYQCAoAafpXHuSel1w8XxtmUXKgYNxQ-EzoryVeJJsNGqWkge0n_Ko66JT_TKXZBKmxq_N-boVjvDK-7Uq2sWGgStYQLEZEc_hmg3oivP14XnKr12I0E6_V1FptJ1wy3wt18bU1CKOv2b-B8dKeM3sSEuiCHRTL3Hme9ItPT3C7SZ-m4xYQOlVnFvMV2ww7vpxAVYG7Pwm6ITCgdz0oYGvk1kHfcGZmFilVWs7N99XqO7_5nzwmthCrFlTDBLaKs045hS-1Q5YQJaTvxEJ3Z4A3CdxfgfaBgwve__xR41JzoKLTsmCatShxwmtFR57XM0p_vTYJUM3hiemgHNGX3SWOc4dIZF8__ZYQG1QkVu5fVwpNIV6k98hFwyQBGTmytyIp3klI8O3Td9_1HOeGCh0Qx6QxRKuBHVpCxm8qC7dyrdSrYo1GXYlO0FYQMfwwVva4Bg-_P_rgNroVnrJ4dZud1qmnxAGj222tbyXUxpjR9WzdJQpv3TpECDNgZTMI4_SXmxyUjPnc5iaGdJYQPwf2MSwS-880n5pt1sO35J-gDqku0vP1emgXnZpy3idJaa4ikW3hTcl8ZzpSyudPBjJeZAqXB-NHLbXAQEymitYQFJg74Zb3417mwFxs3AKi4l5_2tu7lAk1jyUdLh3MyJgT_8nERBfuKKM03cTMBvklSfRdHRyfgNwFU362PVJer5YQGvxWonXDzIXVjVYidPj8mSMvwrxo2bpiLmsTmHdRK85qMOPLcfLge1eI7uo07ZBQt1Q3aozHs70bMmc6ybD7LFYQDfSK7BKFuEmzQnm3KXzvL87juIDGKFoQki5pruMgQKjfHS4TMMhzYnbGO4LDkO9er11P2pr8LMQZLDbscXkZEpYQBZZeIfgeoGb1IDlrfyPO0nti3XUiQ0vbFcDS9D7jzG2xv-e0MtTyez6O37-SZrhxQg50uYceQDENlsua5rU7VJYQLsnUU6weZk2WrLlOeHqXSUYb_sR0Ne5XVdcta7qZEw_rKLd2IDvuz9HGk_RMFfHT4ksSaUpZkzxPDIE0Gb8rFNYQIzW6gLzqFvAK_eCxwY6FmfI-crVX6-QobII6whzqhIH4PQzqOw-n5c_-0h3dAvTJioYrrI-rsxZf6K4LLP8OQ9YQD50Ns1Q08oD2jyy-B3YRR-iYB2ogLXoHGthNUoVpN70EKXNSXN9BdLTbIHbOHLbDDhP0ZKlqbGqyT-GSqP0ftFYQBVhTu8K4J-P6JbDfMtOgd8flCqXVE3c0EcFWGWkT6-18Ks9QJRSABagA5Z0KERhHM6Ajy8Y2vtux-kTel3AcCJYQEtSkZ3QAWUDTqH0OtpbBri7wTvI7xBdZCI2aT5mK34kiIwKDbQrBvSt-plehI_CwDcmghoZdnTVrlnZR_gKYYdYQOzwIpGD-gKGY_aGV7YimIKOQCPHE1yUAVGKly6rorK20uxhdoDiJ0bAYNrWCbGny8kdXQ6Q1E0yculkAocMHY5YQA8utHsLho6IfItBZMKv1mPawNlnMekUpqCtoh4dDI9myZ2ALgbpD-ipf9YD0sezdMsBMR3R6nYouVNHWFuI74tYQN61KJEjtN5Q_dfrNAiWTDmuUgpjtyUSTMdV3I4veuaJ9HdPtbU4DP_5KpMiEQ-mQLkKFBprWXruAUa7VgVArdJYQEsDQ0EfaYeMwgZmbe9eroia2UyZ7ppB4duW_FXwHA-yJgoOvubqCPTGjsGQlnb54MlChjZwfIGvyxsRERWYIlJYQEKDd6_xMjh-LyJl74BcIyMt6WPprOFTM7bW_Sw44OFtTzifD9e1E-bu_Li5nVZuxQ1wOf9BaolCfu8Eu7YuQURYQHfb0iCYU4h0d2x5hhDroRkCswkHu3pr6MV4YAzapttfwiQkTihx5XJR9AsX4eE3IhpyftlA4TXSbIsmMqWdHUxYQD-9egJrKfrDkavYQyay5EdvPaZpcH7YhY6W5pbIxBmrtjDm-Zbsq3hhsygzab8URTpT-WPkiLToGxV6jjBRud5YQKTSJQ1qViY14oyKM9AjBG1vFlMJ4Q3tfAP9_eliCajiDTiS4PK1mp_UTBSURP16AKLnLiLqfNBLQhUFw8D5OdBYQP9Mnn8_Su7PbyFMxb4jjSJGWZwYBLv8ZAyR_W37GtYLjQZur4emY-WKQEIYahnyGEFHnX2bMo8ZwWulRzAHJH9YQDJpIf5fwEU6aL3JCQA4mobj1llIzCHe5YKlJXi_JxVavqhCoK0Zo8B5ky47-FRfrm8iSXdwsHTWcVCXiicIJAtYQHCq740gp4ZjVYFjZNzUtzbkDPu8hG0_AQmUes-6VYyiZqym8GPvOPIswuEtM2TzfJYd0_mtzew-mk3F275VQ4RYQFA5QUVmCfwjqeWHhCNSZfwmM2mpt4sP-s5Mg4tF7j3OHK6iioaYqRPaVpdJpFNCz_zpzaW07iJNf6MQcsuihEtYQBbM42nbvcEYoQbgN9rNpCqdZXmAOAcS5MjiCfp1z7htHFHhZgewuu26n_HYMHrh84ZnSmJemyta_OkYy8EraONYQA9YLeN9JivPNIqQLVpb75lTJchbohgagvbd6_Ms64qBPm3XzNulZK7SXsaXRNPEe0FIh-ttxslzYNdUZ-tJKPtYQKBAAwZfDXmPBtJTbei2q3vJ6wczNPNOkE5VfObOx4mVMGOeaZb8A-i-5Dyd_g2tPLUnZY2UFUjQdV68oZduUStYQI0HzzVMpyuhQudOmnFmmmhEuT_a8DnphZu62LYqMJbSy6LTk2wMAbU7bAkauiG10siLKxV68jAiYWTSjuomOG5YQF-U2BszmQUnKl6lmA_a5oIjCf1NNUxjOhVEynA9ACImhWkFYvRthvUtBH2aeLOpX_1f98DiJ4fRDII0yMYM4uJYQJP7gHW5N3S50JRJgQ5PWQVxGhnBlETcl69L3MKnTk9RHrEGUKFAWO2m1x4PIPxtA888-EggKXPaIYX0Edfp3-5YQCl1Bx6EyB3xiPceRvTnYz-xXXYhU4wO2FYRUtxH_7VoC06nZBUdx6w83-V_W-StObLwvNJtzGmgixtVNBwY7mNYQJbOPtOoR8l2UeHs_wNGeueeiKRzjnM-xg64bSFMgHFU1D22d0KTDDC6MgFV1CgU3ICNw87OGOBUXsjhvVC6fzJYQL2WvtVquXs4jcbVzSQ6x-hlKcTQAtdPIl2FULxoNi3Y7BXxhdZLN9TNbv1vw93S4_oSJggk7N1ejq5xbLyuM-5YQDgkce6AY1CbTd6ajev73qm7ICYspE0AQOUEP5zKtNrPLpm4V1pnIAKPqpe_A-DlBiQw1zJ4uGUY9yk65XFWOmdYQPHGPL24kQ0NknAqMU_dNp5NMqdbcmUxB1YMW8UUDnblOnsfXd5e1EnMh7Lu_2KAgwXgw5EIl3NY9Za-QWZFywFYQGXqmaxB_-y0Etbjpj93dB1SF0FZgcnLMu8XTVBrHiHNwR2I0LaDN0acSSIM9SCYd79a7rtJO6dtiuzJHY0H-UZYQFp152xtRGYKea2ucrmMCFkZccpGFEzKcJRtCt6K0ihaJubFYPd4YSEtcBs6zlugKrrzct4l1pmncwm0UVjWokNYQN16o0iUdUBXhDSptgYsnBAjXmQuJOmvoecAbALD1JASj4Z6b7t026CfG-s3YOVZCjxw9P1K_FV-uFrg6IafXadYQFOpAf7MoNTJ_dMf9y85GgHX9eyDg_B83sxynyZTtyRe_Ii0RqkRxBYIt24dYjZAMrfKDzB-ySR_xldf7tECoNpYQNZsKkKHMo-J8z8_WB9zM0-rq0izRvK1IGYwyVaDXx6kdOkC3Uvfbz13fISZUOykczmuEIBNFNIIBKqgIkNNgEVYQI1iDV1ijxlvesjcr26l0z8b5kMvInC96JxvpVoTBT-QW6QWlIfGTNHUmHjFO3YUeItMtNtMGLHo70CXO2yhxiZYQHQBOHFpC-8TWKIPUBm_DUjcRCxjdTwo1mMGse056EUkUe2yRB649qHfBfL-SGPnrIQuw4N_v7V7S-2RwdMp-QNYQG_JEus82M9n-ULHY-6G9Av1O5I9r6LkZXFq7YZsCJcRzvSiZG6w3zXIXX-fycjJtQmGpQhaUPptV94mXs8I6PVYQA1nu5LwbCIYlKqHDWR9_LT_3N5DKNhztnOCu3reL5V62-ac8F-B8hxdv0kcthy_X4knPpYBMiCAIGrDOUSzYjyCZy9pc3N1ZXJqL3ZhbGlkRnJvbQ"
+    proofValue: "u2V0AhVhAnadwFr1hGTlAjuHkNWgDVDfzD4gzVt6xeZzZAjfF7EyizfNWLXOCS5KcsRoDHCA3yHOIqd3Wts8DX8qgBqwAIFgjgCQDfOhzFtCiCJaBznGJnNl9HIKPJqFDTWJtA-Pe3_Cxeq9YIBofwFe_Mzm84m8fop2Zixtq8luduy2pzdiARXD73FXPmCFYQANKElWYM4xrUu6HNtWnfFQmMp90mKE-3r6PgqABFuFo0VW-k0u7W977l1DoFUD74pc2aeGR84usAzPThujVjfVYQEhAJoWAhJGnNzyhenKrMkiVvbVYSjsHTxtOKRkGtU72fflseELawp0fZnCOoXQ1EtryS7oOmbh9eBK_EfUolZdYQOd-GZfvHgGryg3vhRwkGDvHk1X-bbREkqe26-sc4RbR39vrvQraXkxS-Jk3V1Dm-7A44a9mSCb3B4a9cFEJnf5YQHI90hehVKLSQvs1QEg_164GaQrkcnYh_eOMBL7uH7rz7Z3hzjJPwtbTg0c6xXaADxwHqJxtXe2a7k2NWMHtfIVYQEAFkzJbSi49fa9pJwC-P8TcLK3b34BdwvuHpjGh3Didw7FaPGU4tAPJQkNUGNicdvzbu6tYxtvltt64vkt4xG1YQCnzbxPaqNrMBIqFtPgLk0iXBdv__wbTscKHrOqynFD1MpnZtHrykpvB8CW7SmHRRn73Sb_rLKFoFWnqcQt8FUVYQKTpzizmvNWgdRJgMDnGKE5Z-6QIIVdqiLYyRtBqZ5kZFbMNHKaCovhqBNc9zauybLbyrmp1P1BiKgLc7xk5I0VYQMuGMSlLV9cVw6Wx0ppJYNjY3aiqUx4BqKuF8luLPLy6HxxHGkVzdWPnIaqrPMUw77cSq3NWaXxjI8eVd5RYUZNYQIzxESpHlZ-uilrek9brItl5hwhaR2BF9_H8WonRkwfvAjFxVGuAy6fjl8bFlZPsvQR-7vF_y4fpbnTmszqwVL1YQJ3XO52HfODHaOeOz7yxOiIeqptUT2K7YM6RKiQhJm4DPSFpUMRWsh6MUwNGiNJCqbg5iSe79u_DO4Wo8lGKRyVYQDEOMdO90An3jsbDZLFnkLpyPZCnrqGRpcygPw7X1XMHit5CoMxaMP3TBUDoD1yJ7RDekWTP2JKV5bAAL1XRWYlYQK2_Yec_1AOVZoQzkjdUfmCBO1x0jKmWLALECKfEtmO5fbeqKVntj_uyw-FaTE38fnHrTbAIc2tGDGqrDxLf6_pYQNpSCYmdemdSMY64rjLgzf6TnRv4aaMCXP4WufQ6SahWhsNMBWlcHa61hcenZoHR4EdvY-B3DrdDZ7UbdqbSB6pYQJIUDlmmYnvdOzoSbyqVhqeKuefWJjkuEqw5tZO-pjxXf6yaQmRZ5qvNfRyDWuBeDVndEHYzqfSd8nIf90vokD5YQKYbbmg-cVgkm-_3pziI4uSk5dumoSKwf39VUhWpq8gHWVoiMNHybvyQcEjLJGU10_nfInkRHNgVDTaytx7G_itYQC7y2tdMxIdmOpQ0oIQDlpJ476IZ2yCVVI3taQd6W0vj7LxVJgDndaL8S08JktAOmPrmimimbdm9fNvCu0nG0GtYQLZFRUJavsoUWCFfv-E5xOBRqFG4xfLiQ2Onc8WEvUDDCcfWXrw2m-euzsEOjt59LsxJIYBmrpr9KQhxl5uvBx1YQBEGIoV9aPPVhQuhVUl-cA2Dy7VPItr85ivOu-CSsH2q5-O_kunpmU9_cNIhQpq7ZkVclseRl6h7SsNJNfYq2mFYQD5SQpxccHQu1u3hAqOkZOEKto06apIGFYBMgT2gWd4KvYrhaSIIfiVxDfDTZl_xk7WbI1U9FmMKFxMdNoGAzX9YQC8nkr6oTruHbV6IBVckLornP2yqAUAkuSpIU29_IJuTWgZWHnz0aRMx9VWCokKbhZFvWO93cv9Ky9HHgHkRFaZYQOgrrBb77tOrrMZ4tgZy6wTIT-02uSqcNTcruyp9cEZM-qGLbWFJZSaGTfhiihki2zOFxyZzg79GVoP9UDZSRupYQHR2oUv4g2Np0Ip_1nfdnoHaVhVhde4X2tbYAoqtFNmDve1ZgkU3y9UPQdpajzf_Gfb4q5rAK0kF_Cz3sprCJSFYQJ7jZT0TPNlQJ-UQenWy_xvy6nLSBYWaV1OzZaaGJ93hadhlUGTl0WbfQbkrdhuyf_OrKcrff4BJg7KKzLZuurVYQHeZnZmnhMo5mQli8SyxVo-MXvE3ERUfWythYiKoFfilgY8l5FTWLRO1wFzh-Tqf-A39pZO8ezRA7MxmHQePfepYQJsoMCw59nLcfmY9z71x2wuZjcimsPlQNaQiYBMAPZac1B7zZLLXAGpu6ywy1tPN3hpbvwfc44zbttO6YwfbsyZYQDx9zdxh4X9mr1zKI9BgcfsoEX49o2svIdSFbeIvqj0xZE4E44Hm612KAn7ji0IPsSJ_4nqi3541rc_xFytWaQpYQJNgZFdZLOtrkH7qhIiP6hPa0SfBZvwUvC2CVX_RY9Pz5MGwCHM_tKWR6ai4cebATGfMLF58Nm5iodjk1Kk7DyZYQIbY1mA1ohnxLock4Gf7QZgjTwIPxBYGhpUAz8dIswJ7pC9Pk2cD1TOBD8-JQ8aL_tE4l7cNiG-zQAa_J0vPoqpYQKo7FJkYixYiNh98mFJWYqOFTzT9v-NCO1G82tLqt-iUvsuv4cNOjtVslJU4U3HnhV3r5QxxKWRrODLEB16o0hRYQLDTm9EtPr0tXNshh3Al3ogbjAKITPaQFNckHdClNP7TLYyRS4DPg3dk0CgLUoM7CJgU4NhCFUO8g-gECKs5RYZYQJQRJApo8Mj9pXOv_uxik3t-9wXfO6s5izNbOQBZqS1dgr1zTrPeDim6q4xnIGaC39j-iwdxXWowbL7z-q5sSDlYQB0KvYHAEG3Yr8FNKKam5A-WjkbLHyT-_piW_d2Ir-KSg3ecyJexLxGuguAyFUvOTB8Vm8Bxxe0RJvAWx11kk3FYQLD-uikpmRJV48h3Tzdfj43XW7rTKQr_OLahFWHjt0cVHv1z8lFrktIL9aTmLYj6xFSo-IRSJ_1KVIJW8e5lfsSCZy9pc3N1ZXJqL3ZhbGlkRnJvbQ"
   }
 };

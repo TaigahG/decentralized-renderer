@@ -2,66 +2,46 @@ import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
 export interface CertificateOfOrigin {
-    cooId?: string;
-    issueDateTime?: string;
-    firstSignatoryAuthentication?: string;
-    signature?: string;
+    "@context"?: string | object;
+    "@id"?: string;
+    "@type"?: string;
 
-    // Supply Chain Consignment
-    supplyChainConsignment?: string;
-    supplyChainConsignmentId?: string;
-    supplyChainConsignmentInformation?: string;
+    // --- Document Identifiers ---
+    documentId?: string;
+    shipmentId?: string;
+    certificateOfOriginNumber?: string;
 
-    // Export Country
-    exportCountry?: string;
-    exportCountryCode?: string;
+    // --- Parties & Authorities ---
+    exporter?: COOParty;
+    certificateIssuer?: COOAuthority;
+    managementAuthority?: COOAuthority;
 
-    // Exporter Information (flattened)
-    exporter?: string;
-    exporterId?: string;
-    exporterName?: string;
-    exporterLine1?: string;
-    exporterLine2?: string;
-    exporterCityName?: string;
-    exporterPostcode?: string;
-    exporterCountrySubDivisionName?: string;
-    exporterCountryCode?: string;
+    // --- Shipment Details ---
+    countryOrigin?: string;
+    grossWeight?: string;
 
-    // Import Country
-    importCountry?: string;
-    importCountryCode?: string;
+    // --- Goods Details ---
+    /** List of goods included in this certificate */
+    goods?: COOGoodsItem[]; // Mapped from @set container
+}
 
-    // Importer Information (flattened)
-    importer?: string;
-    importerId?: string;
-    importerName?: string;
-    importerLine1?: string;
-    importerLine2?: string;
-    importerCityName?: string;
-    importerPostcode?: string;
-    importerCountrySubDivisionName?: string;
-    importerCountryCode?: string;
+// --- Sub-Interfaces ---
 
-    // Consignment Items
-    includedConsignmentItems?: string;
+export interface COOParty {
+    name?: string;
+    addressLine?: string;
+    city?: string;
+    country?: string;
+    email?: string;
+}
 
-    // Loading Location
-    loadingBaseportLocation?: string;
-    loadingBaseportLocationId?: string;
-    loadingBaseportLocationName?: string;
+export interface COOAuthority extends COOParty {
+    seal?: string; // String representation or URL reference to the official seal/stamp
+}
 
-    // Transport Movement
-    mainCarriageTransportMovement?: string;
-    mainCarriageTransportMovementId?: string;
-    mainCarriageTransportMovementInformation?: string;
-    usedTransportMeansName?: string;
-    usedTransportMeansId?: string;
-    departureDateTime?: string;
-
-    // Unloading Location
-    unloadingBaseportLocation?: string;
-    unloadingBaseportLocationId?: string;
-    unloadingBaseportLocationName?: string;
+export interface COOGoodsItem {
+    description?: string;
+    numberOfPackages?: number; // Mapped from XMLSchema#integer
 }
 
 export type CertificateOfOriginW3C = SignedVerifiableCredential & {
