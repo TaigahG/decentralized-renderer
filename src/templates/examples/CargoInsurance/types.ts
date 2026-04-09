@@ -1,111 +1,84 @@
 import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
+/**
+ * Represents a Cargo Insurance Certificate.
+ * A document issued to protect the buyer or seller against financial loss 
+ * if the cargo is damaged, lost, or stolen during transit.
+ */
 export interface CargoInsurance {
-  documentTypeCode?: string;
-  certificateIdentifier?: string;
-  openPolicyReference?: string;
-  
+  // --- Document & Shipment Identifiers ---
+  documentId?: string;
+  shipmentId?: string;
+  invoiceNumber?: string;
+  insurancePolicyNumber?: string;
+
+  // --- Dates ---
   /** Date format: YYYY-MM-DD */
-  issueDate?: string;
-  placeOfIssue?: string;
+  issuedDate?: string;
+  /** Date format: YYYY-MM-DD */
+  estimatedTimeOfDeparture?: string;
 
-  insuredParty?: InsuredParty;
-  insuranceProvider?: InsuranceProvider;
-  claimsPayableTo?: ClaimsPayableTo;
-  claimsSettlingAgent?: ClaimsSettlingAgent;
-  transportInformation?: TransportInformation;
-  
-  /** Details regarding the specific goods being insured */
-  goodsDetails?: GoodsDetail[]; // Mapped from @set container
-  
-  valuation?: Valuation;
-  coverage?: Coverage;
+  // --- Parties ---
+  insuredParty?: CargoInsuranceParty;
+  insuranceCompany?: CargoInsuranceParty;
+  insuranceClaimAdjuster?: ClaimAdjuster;
 
-  digitalSignature?: string;
-  documentHash?: string;
-  links?: string | string[];
+  // --- Locations & Routing ---
+  originalLoadingLocation?: string;
+  placeOrDeparture?: string;
+  baseportUnloadingLocation?: string;
+  placeOfTheDeliveryByCarrier?: CargoDeliveryPlace;
+  documentPlaceOfIssue?: string;
+
+  // --- Insurance Details ---
+  insuranceCondition?: string; // e.g., "Institute Cargo Clauses (A)"
+  insuredValueAmount?: number;
+
+  // --- Goods Details ---
+  /** List of goods covered by this insurance policy */
+  goods?: CargoGoodsItem[]; // Mapped from @set container
 }
 
 // --- Sub-Interfaces ---
 
-export interface InsuredParty {
+/**
+ * Base representation of a standard party in the Cargo Insurance document.
+ * Shared across Insured Party and Insurance Company.
+ */
+export interface CargoInsuranceParty {
   name?: string;
-  address?: string;
-  countryCode?: string;
-  unId?: string;
+  addressLine?: string;
+  city?: string;
+  country?: string;
+  email?: string;
 }
 
-export interface InsuranceProvider {
+/**
+ * Represents the claim adjuster. 
+ * Note: Uses a simpler address structure compared to standard parties.
+ */
+export interface ClaimAdjuster {
   name?: string;
-  address?: string;
-  countryCode?: string;
+  address?: string; // Uses 'address' instead of 'addressLine'
+  email?: string;
 }
 
-export interface ClaimsPayableTo {
+/**
+ * Represents the specific location where the carrier delivers the goods.
+ */
+export interface CargoDeliveryPlace {
   name?: string;
-  address?: string;
+  addressLine?: string;
 }
 
-export interface ClaimsSettlingAgent {
-  name?: string;
-  address?: string;
-  contactDetails?: string;
-}
-
-export interface TransportInformation {
-  modeOfTransport?: string;
-  meansOfTransportName?: string;
-  transportServiceIdentifier?: string;
-  carrierName?: string;
-  loadingLocation?: string;
-  dischargeLocation?: string;
-  placeOfDelivery?: string;
-  
-  /** Date format: YYYY-MM-DD */
-  departureDate?: string;
-  
-  containerNumber?: string;
-  blReference?: string;
-}
-
-export interface GoodsDetail {
-  shippingMarks?: string;
-  packageType?: string;
-  packageQuantity?: number;
-  goodsDescription?: string;
-  grossWeight?: Measurement;
-  volume?: Measurement;
-}
-
-export interface Measurement {
-  value?: number;
-  unit?: string;
-}
-
-export interface Valuation {
-  invoiceReference?: string;
-  /** Date format: YYYY-MM-DD */
-  invoiceDate?: string;
-  incoterms?: string;
-  insuredValue?: InsuredValue;
-  basisOfValuation?: string;
-}
-
-export interface InsuredValue {
-  currencyCode?: string;
-  amount?: number;
-  percentage?: number;
-}
-
-export interface Coverage {
-  coverageConditionCode?: string;
-  warClauseIncluded?: boolean;
-  strikesClauseIncluded?: boolean;
-  deductible?: Deductible;
-  surveyClause?: string;
-  /** Date format: YYYY-MM-DD */
-  coverageExpiry?: string;
+/**
+ * Represents an individual goods line item covered by the insurance.
+ */
+export interface CargoGoodsItem {
+  description?: string;
+  numberOfPackages?: number;
+  hsCode?: string; // Harmonized System Code
 }
 
 export interface Deductible {

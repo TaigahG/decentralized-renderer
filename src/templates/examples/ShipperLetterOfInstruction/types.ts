@@ -1,148 +1,64 @@
 import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
+/**
+ * Represents a Shipper's Letter of Instructions (SLI).
+ * A document issued by a shipper to a freight forwarder, providing all the necessary 
+ * details and instructions to successfully move a shipment.
+ */
 export interface ShipperLetterOfInstructions {
-  "@context"?: string | object;
-  "@id"?: string;
-  "@type"?: string;
+  // --- Document Identifiers ---
+  documentId?: string;
+  shipmentId?: string;
 
-  shipperReferenceNumber?: string;
-  forwarderReferenceNumber?: string;
-  
+  // --- Dates ---
   /** Date format: YYYY-MM-DD */
-  dateOfInstruction?: string;
-  
-  /** List of related document identifiers */
-  relatedDocumentIds?: RelatedDocumentId[]; // Mapped from @set container
+  issueDate?: string;
+  /** Date format: YYYY-MM-DD */
+  despatchDate?: string;
 
-  principalShipper?: PrincipalShipper;
-  consignee?: Consignee;
-  intermediateConsignee?: IntermediateConsignee;
-  forwardingAgent?: ForwardingAgent;
-  
-  transportInstructions?: TransportInstructions;
-  
-  /** List of goods items */
-  goodsDetails?: GoodsDetail[]; // Mapped from @set container
-  
-  valueAndInsurance?: ValueAndInsurance;
-  documentDistribution?: DocumentDistribution;
-  
-  additionalInstructions?: string;
+  // --- Parties ---
+  consignee?: SLIParty;
+  freightForwarder?: SLIParty;
+  consignor?: SLIParty;
 
-  digitalSignature?: string;
-  documentHash?: string;
-  links?: string | string[];
+  // --- Location & Trade Terms ---
+  despatchLocationName?: string;
+  originCountry?: string;
+  placeOfIssue?: string;
+  tradeTermsConditionsDescription?: string; // e.g., Incoterms like "FOB Shanghai"
+
+  // --- Weights ---
+  grossWeight?: number;
+  netWeight?: number;
+
+  // --- Goods Details ---
+  /** List of goods included in this shipment */
+  goods?: SLIGoodsItem[]; // Mapped from @set container
 }
 
 // --- Sub-Interfaces ---
 
-export interface RelatedDocumentId {
-  documentType?: string;
-  documentNumber?: string;
-}
-
-export interface PrincipalShipper {
+/**
+ * Base representation of a party in the Shipper's Letter of Instructions.
+ * Shared across Consignee, Freight Forwarder, and Consignor.
+ */
+export interface SLIParty {
   name?: string;
-  address?: string;
-  countryCode?: string;
-  taxId?: string;
-  eoriNumber?: string;
-  contactPerson?: ContactPerson;
-}
-
-export interface Consignee {
-  name?: string;
-  address?: string;
-  countryCode?: string;
-  contactPerson?: ContactPerson;
-}
-
-export interface IntermediateConsignee {
-  name?: string;
-  address?: string;
-  purpose?: string;
-}
-
-export interface ForwardingAgent {
-  name?: string;
-  address?: string;
-  contactPerson?: ContactPerson;
-}
-
-export interface ContactPerson {
-  name?: string;
-  phone?: string;
+  addressLine?: string;
+  city?: string;
+  country?: string;
   email?: string;
 }
 
-export interface TransportInstructions {
-  modeOfTransport?: string;
-  incoterms?: string;
-  portOfExport?: string;
-  portOfDischarge?: string;
-  finalDestination?: string;
-  freightPaymentTerms?: string; // e.g., "Prepaid", "Collect"
-  freightPaymentDetails?: FreightPaymentDetails;
-}
-
-export interface FreightPaymentDetails {
-  paymentBy?: string;
-  thirdPartyName?: string;
-  thirdPartyAddress?: string;
-}
-
-export interface GoodsDetail {
-  shippingMarks?: string;
-  packageType?: string;
-  packageQuantity?: number;
-  goodsDescription?: string;
-  hsCode?: string;
-  grossWeight?: Measurement;
-  netWeight?: Measurement;
-  volume?: Measurement;
-  countryOfOrigin?: string;
-}
-
-export interface Measurement {
-  value?: number;
-  unit?: string;
-}
-
-export interface ValueAndInsurance {
-  valueForCustoms?: MonetaryAmount;
-  valueForCarriage?: MonetaryAmount;
-  insuranceInstructions?: InsuranceInstructions;
-}
-
-export interface InsuranceInstructions {
-  insureGoods?: boolean;
-  insuredValue?: MonetaryAmount;
-  notes?: string;
-}
-
-export interface MonetaryAmount {
-  currencyCode?: string;
-  amount?: number;
-}
-
-export interface DocumentDistribution {
-  documentationInstructions?: string;
-  billOfLadingInstructions?: BillOfLadingInstructions;
-  exportControl?: ExportControl;
-}
-
-export interface BillOfLadingInstructions {
-  numberOfOriginals?: number;
-  sendTo?: string;
-  releaseType?: string; // e.g., "Express", "Original"
-}
-
-export interface ExportControl {
-  licenseRequired?: boolean;
-  licenseNumber?: string;
-  eccn?: string;
-  notes?: string;
+/**
+ * Represents an individual goods line item in the shipment.
+ */
+export interface SLIGoodsItem {
+  description?: string;
+  numberOfPackages?: number;
+  typeOfPackaging?: string; // e.g., "Pallets", "Cartons"
+  hsCode?: string; // Harmonized System Code
 }
 
 export type ShipperLetterOfInstructionsW3C = SignedVerifiableCredential & {

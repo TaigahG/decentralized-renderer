@@ -5,275 +5,159 @@ import { getDocumentData } from "../../../utils";
 import { ShipDeliveryOrder, ShipDeliveryOrderSchema } from "./types";
 
 export const ShipDeliveryOrderTemplate: FunctionComponent<
-    TemplateProps<ShipDeliveryOrderSchema>
+  TemplateProps<ShipDeliveryOrderSchema>
 > = ({ document }) => {
-    const data = getDocumentData(document) as ShipDeliveryOrder;
+  const data = getDocumentData(document) as ShipDeliveryOrder;
 
-    const {
-        deliveryOrderNumber,
-        billOfLadingNumber,
-        issueDate,
-        validityDate,
-        expiryDate,
-        voyageNumber,
-        vesselName,
-        portOfDischarge,
-        arrivalDate,
-        issuedBy: {
-            shippingLineName,
-            localAgentName,
-            address: issuedByAddress,
-            contactPerson: issuedByContact,
-        } = {},
-        issuedTo: {
-            terminalOperatorName,
-            terminalName,
-            terminalCode,
-            address: issuedToAddress,
-        } = {},
-        consignee: {
-            name: consigneeName,
-            address: consigneeAddress,
-            taxId: consigneeTaxId,
-        } = {},
-        haulageCompany: {
-            companyName: haulageCompanyName,
-            driverName,
-            truckLicensePlate,
-            contactPhone: haulagePhone,
-        } = {},
-        containerDetails = [],
-        returnInstructions: {
-            emptyReturnDepot: {
-                depotName = undefined,
-                address: depotAddress = undefined,
-                operatingHours = undefined,
-            } = {},
-            returnValidityDate,
-            specialInstructions,
-        } = {},
-        financialStatus: {
-            freightStatus,
-            detentionTerms,
-            demurrageTerms,
-            outstandingCharges,
-        } = {},
-        releaseConditions = [],
-    } = data;
+  const {
+    billOfLadingNumber,
 
-    // --- Helpers ---
-    const display = (value: any) => (value ? String(value) : "");
+    // --- Parties ---
+    carrier: {
+      name: carrierName,
+      addressLine: carrierAddress,
+      city: carrierCity,
+      country: carrierCountry,
+      email: carrierEmail,
+    } = {},
+    consignee: {
+      name: consigneeName,
+      addressLine: consigneeAddress,
+      city: consigneeCity,
+      country: consigneeCountry,
+      email: consigneeEmail,
+    } = {},
 
-    const formatDate = (dateStr?: string) => {
-        if (!dateStr) return "";
-        try {
-            return new Date(dateStr).toISOString().split("T")[0];
-        } catch (e) {
-            return dateStr;
-        }
-    };
+    // --- Location & Routing ---
+    placeOfTheDeliveryByCarrier: {
+      name: deliveryLocationName,
+      addressLine: deliveryLocationAddress,
+    } = {},
+    originalLoadingLocation,
+    baseportUnloadingLocation,
 
-    const formatMoney = (val?: number, curr?: string) => {
-        if (val === undefined || val === null) return "";
-        return `${curr || ""} ${val.toFixed(2)}`;
-    };
+    // --- Goods Details ---
+    grossWeight,
+    shippingMarks,
 
-    const Label = ({ children }: { children: React.ReactNode }) => (
-        <div className="text-[9px] uppercase font-bold text-gray-500 mb-0.5 tracking-wider leading-none">
-            {children}
+    // --- Transport & Equipment ---
+    conveyanceReferenceNumber,
+    transportMeansIdentifier,
+    transportEquipmentIdentifier,
+    sealIdentifier,
+  } = data;
+
+  // Strict B&W Box Helper
+  const DataBox = ({ label, value, className = "", inverted = false, fontMono = false }: { label: string; value?: string | React.ReactNode; className?: string; inverted?: boolean; fontMono?: boolean }) => (
+    <div className={`p-3 border-r border-b border-black last:border-r-0 ${inverted ? "bg-black text-white" : "bg-white text-black"} ${className}`}>
+      <label className={`block text-[9px] uppercase font-bold mb-1 tracking-widest leading-none ${inverted ? "text-gray-400" : "text-gray-600"}`}>
+        {label}
+      </label>
+      <div className={`text-sm font-bold uppercase leading-tight whitespace-pre-wrap break-words ${fontMono ? "font-mono" : ""}`}>
+        {value || "-"}
+      </div>
+    </div>
+  );
+
+  return (
+    <Wrapper>
+      <div className="max-w-4xl mx-auto bg-white font-sans text-black border-2 border-black my-10 relative overflow-hidden">
+        
+        {/* --- Header Section --- */}
+        <div className="flex justify-between items-start border-b-4 border-black p-3 mb-0">
+          <div className="flex-1">
+            <h1 className="text-4xl font-black uppercase tracking-tighter leading-none mb-2">
+              Delivery Order
+            </h1>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] border border-black px-2 py-1 inline-block">
+              Authorization for Cargo Release
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-[9px] font-bold uppercase tracking-widest mb-1">Master B/L Reference</p>
+            <p className="text-2xl font-mono font-black tracking-widest bg-black text-white px-3 py-1">
+              {billOfLadingNumber || "PENDING"}
+            </p>
+          </div>
         </div>
-    );
 
-    const SectionTitle = ({ title }: { title: string }) => (
-        <div className="bg-black text-white px-2 py-1 font-bold text-xs uppercase tracking-wide mb-2 mt-4">
-            {title}
+        {/* --- Parties Section --- */}
+        <div className="grid grid-cols-2 border-b-2 border-black">
+          {/* Carrier / Issuer */}
+          <div className="border-r border-black p-4">
+             <div className="flex items-center space-x-2 mb-3">
+                <div className="w-3 h-3 bg-black"></div>
+                <h3 className="text-xs font-black uppercase tracking-widest">Carrier / Issuing Agent</h3>
+             </div>
+             <div className="text-sm font-bold uppercase mb-1">{carrierName}</div>
+             <div className="text-xs mb-2 leading-relaxed">
+               {carrierAddress}<br/>
+               {carrierCity}, {carrierCountry}
+             </div>
+             {carrierEmail && <div className="text-[10px] font-mono text-gray-700 mt-2">Email: {carrierEmail}</div>}
+          </div>
+
+          {/* Consignee / Deliver To */}
+          <div className="p-4 bg-gray-50">
+             <div className="flex items-center space-x-2 mb-3">
+                <div className="w-3 h-3 border-2 border-black"></div>
+                <h3 className="text-xs font-black uppercase tracking-widest">Deliver To (Consignee / Broker)</h3>
+             </div>
+             <div className="text-sm font-bold uppercase mb-1">{consigneeName}</div>
+             <div className="text-xs mb-2 leading-relaxed">
+               {consigneeAddress}<br/>
+               {consigneeCity}, {consigneeCountry}
+             </div>
+             {consigneeEmail && <div className="text-[10px] font-mono text-gray-700 mt-2">Email: {consigneeEmail}</div>}
+          </div>
         </div>
-    );
 
-    return (
-        <Wrapper data-testid="ship-delivery-order-template">
-            <div className="max-w-[210mm] mx-auto bg-white text-black p-8 font-sans antialiased box-border">
+        {/* --- Delivery Location (CRITICAL FOR SDO) --- */}
+        <div className="border-b-2 border-black bg-black text-white p-5">
+           <label className="block text-[10px] uppercase font-bold text-gray-400 mb-2 tracking-[0.2em]">
+             Place of Delivery (Terminal / CFS)
+           </label>
+           <div className="text-2xl font-black uppercase tracking-widest mb-1">
+              {deliveryLocationName || "PORT TERMINAL"}
+           </div>
+           <div className="text-sm font-mono text-gray-300">
+              {deliveryLocationAddress}
+           </div>
+        </div>
 
-                {/* Main Document Border */}
-                <div className="border-4 border-black p-1">
-                    <div className="border border-black p-4">
+        {/* --- Transport & Routing --- */}
+        <div className="grid grid-cols-4 border-b-2 border-black">
+           <DataBox label="Vessel / Means of Transport" value={transportMeansIdentifier} className="col-span-2" />
+           <DataBox label="Voyage Number" value={conveyanceReferenceNumber} fontMono className="col-span-2 border-r-0" />
+        </div>
+        <div className="grid grid-cols-2 border-b-2 border-black">
+           <DataBox label="Original Port of Loading" value={originalLoadingLocation} />
+           <DataBox label="Port of Discharge" value={baseportUnloadingLocation} className="border-r-0" />
+        </div>
 
-                        {/* Header */}
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="w-1/2">
-                                <h1 className="text-4xl font-black uppercase tracking-tighter">Delivery Order</h1>
-                                <p className="text-xs font-bold text-gray-500 mt-1">
-                                    Release Instructions to Terminal Operator
-                                </p>
-                            </div>
-                            <div className="w-1/2 text-right">
-                                <div className="inline-block border-2 border-black p-2 min-w-[200px]">
-                                    <Label>DO Number</Label>
-                                    <div className="text-xl font-mono font-bold">{display(deliveryOrderNumber)}</div>
-                                </div>
-                                <div className="flex justify-end gap-4 mt-2">
-                                    <div>
-                                        <Label>Validity Date</Label>
-                                        <div className="font-bold text-sm">{formatDate(validityDate)}</div>
-                                    </div>
-                                    <div>
-                                        <Label>Expiry Date</Label>
-                                        <div className="font-bold text-sm text-red-600">{formatDate(expiryDate)}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        {/* --- Equipment / Cargo Identification --- */}
+        <div className="grid grid-cols-3 border-b-2 border-black">
+           <DataBox label="Container Number" value={transportEquipmentIdentifier} fontMono />
+           <DataBox label="Seal Number" value={sealIdentifier} fontMono />
+           <DataBox label="Gross Weight" value={grossWeight ? `${grossWeight} KGM` : "N/A"} fontMono className="border-r-0" />
+        </div>
 
-                        {/* Core Reference Grid */}
-                        <div className="grid grid-cols-4 gap-4 bg-gray-100 p-3 border-y border-black mb-4 text-xs">
-                            <div>
-                                <Label>Bill of Lading No.</Label>
-                                <div className="font-bold">{display(billOfLadingNumber)}</div>
-                            </div>
-                            <div>
-                                <Label>Vessel / Voyage</Label>
-                                <div className="font-bold">{display(vesselName)} / {display(voyageNumber)}</div>
-                            </div>
-                            <div>
-                                <Label>Port of Discharge</Label>
-                                <div className="font-bold">{display(portOfDischarge)}</div>
-                            </div>
-                            <div>
-                                <Label>Arrival Date</Label>
-                                <div className="font-bold">{formatDate(arrivalDate)}</div>
-                            </div>
-                        </div>
+        {/* --- Shipping Marks & Description --- */}
+        <div className="border-b-2 border-black min-h-[180px] flex flex-col p-4 bg-gray-50">
+           <label className="block text-[9px] uppercase font-bold mb-3 tracking-widest text-gray-600 border-b border-black w-fit pb-1">
+             Shipping Marks & Cargo Description
+           </label>
+           <div className="text-sm font-mono whitespace-pre-wrap leading-relaxed">
+              {shippingMarks || "AS PER ORIGINAL BILL OF LADING."}
+           </div>
+        </div>
 
-                        {/* Parties Section */}
-                        <div className="flex border border-black mb-4">
-                            {/* Carrier (Issuer) */}
-                            <div className="w-1/3 p-3 border-r border-black">
-                                <Label>Issued By (Carrier/Agent)</Label>
-                                <div className="font-bold text-sm mt-1">{display(localAgentName || shippingLineName)}</div>
-                                <div className="text-xs whitespace-pre-wrap">{display(issuedByAddress)}</div>
-                                {issuedByContact?.name && (
-                                    <div className="text-[10px] mt-2 text-gray-500">Ctc: {issuedByContact.name}</div>
-                                )}
-                            </div>
-
-                            {/* Terminal (Receiver of Instruction) */}
-                            <div className="w-1/3 p-3 border-r border-black bg-gray-50">
-                                <Label>To Terminal / Depot</Label>
-                                <div className="font-bold text-sm mt-1">{display(terminalName || terminalOperatorName)}</div>
-                                {terminalCode && <div className="text-xs font-mono">Code: {terminalCode}</div>}
-                                <div className="text-xs mt-1">{display(issuedToAddress)}</div>
-                            </div>
-
-                            {/* Consignee */}
-                            <div className="w-1/3 p-3">
-                                <Label>Consignee</Label>
-                                <div className="font-bold text-sm mt-1">{display(consigneeName)}</div>
-                                <div className="text-xs whitespace-pre-wrap">{display(consigneeAddress)}</div>
-                                {consigneeTaxId && <div className="text-[10px] mt-2 text-gray-500">Tax ID: {consigneeTaxId}</div>}
-                            </div>
-                        </div>
-
-                        {/* Instructions Text */}
-                        <div className="mb-6 text-xs text-justify leading-relaxed">
-                            Please deliver the goods described below to the order of <strong>{display(consigneeName)}</strong>
-                            or their authorized haulage contractor <strong>{display(haulageCompanyName)}</strong>
-                            {truckLicensePlate && `(Truck: ${truckLicensePlate})`} upon presentation of this Delivery Order.
-                        </div>
-
-                        {/* Container Table */}
-                        <SectionTitle title="Cargo & Container Details" />
-                        <div className="border border-black mb-6">
-                            <div className="flex bg-black text-white text-[10px] font-bold uppercase p-1">
-                                <div className="w-1/4 pl-2">Container No.</div>
-                                <div className="w-1/6">Seal No.</div>
-                                <div className="w-1/6">Type</div>
-                                <div className="w-1/6">Pkgs</div>
-                                <div className="w-1/4 text-right pr-2">Gross Weight</div>
-                            </div>
-                            {containerDetails.length > 0 ? (
-                                containerDetails.map((cntr, idx) => (
-                                    <div key={idx} className="flex text-xs border-t border-gray-300 p-2 items-center">
-                                        <div className="w-1/4 font-mono font-bold">{display(cntr.containerNumber)}</div>
-                                        <div className="w-1/6 font-mono">{display(cntr.sealNumber)}</div>
-                                        <div className="w-1/6">{display(cntr.containerSize)} {display(cntr.containerType)}</div>
-                                        <div className="w-1/6">{display(cntr.numberOfPackages)} {display(cntr.packageType)}</div>
-                                        <div className="w-1/4 text-right font-mono">
-                                            {cntr.grossWeight?.value} {cntr.grossWeight?.unit}
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="p-4 text-center text-gray-400 italic text-xs">No container details available</div>
-                            )}
-                        </div>
-
-                        {/* Return Instructions (Crucial for Drivers) */}
-                        <div className="flex border-2 border-black border-dashed mb-6">
-                            <div className="w-2/3 p-3 bg-yellow-50">
-                                <Label>Empty Container Return Instruction</Label>
-                                <div className="font-bold text-sm mt-1">{display(depotName)}</div>
-                                <div className="text-xs whitespace-pre-wrap">{display(depotAddress)}</div>
-                                <div className="mt-2 text-[10px] grid grid-cols-2">
-                                    <div>Hours: <span className="font-semibold">{display(operatingHours)}</span></div>
-                                    <div>Valid Until: <span className="font-semibold text-red-600">{formatDate(returnValidityDate)}</span></div>
-                                </div>
-                                {specialInstructions && (
-                                    <div className="mt-2 text-[10px] italic bg-white p-1 border border-gray-200">
-                                        Note: {specialInstructions}
-                                    </div>
-                                )}
-                            </div>
-                            <div className="w-1/3 p-3 border-l-2 border-black border-dashed flex flex-col justify-center">
-                                <Label>Financial Status</Label>
-                                <div className="text-lg font-bold uppercase mt-1 mb-2">
-                                    {freightStatus || "COLLECT"}
-                                </div>
-                                {outstandingCharges?.amount ? (
-                                    <div className="text-red-600 font-bold text-xs">
-                                        Outstanding: {formatMoney(outstandingCharges.amount, outstandingCharges.currencyCode)}
-                                    </div>
-                                ) : (
-                                    <div className="text-green-600 font-bold text-xs">ALL CHARGES PAID</div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Detention / Demurrage Info */}
-                        <div className="grid grid-cols-2 gap-4 text-[10px] mb-6 text-gray-600">
-                            <div className="border p-2">
-                                <strong>Detention Terms:</strong> {detentionTerms?.freeDays} Free Days.
-                                {detentionTerms?.terms}
-                            </div>
-                            <div className="border p-2">
-                                <strong>Demurrage Terms:</strong> {demurrageTerms?.freeDays} Free Days.
-                                {demurrageTerms?.terms}
-                            </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="flex items-end justify-between border-t border-black pt-4">
-                            <div className="w-2/3 text-[9px] text-justify pr-4 text-gray-500">
-                                <p className="mb-2">
-                                    <strong>CONDITIONS:</strong> This Delivery Order is issued subject to the terms and conditions of the Carrier's Bill of Lading.
-                                    The Receiver acknowledges receipt of the goods in apparent good order and condition unless otherwise stated.
-                                </p>
-                                {releaseConditions.length > 0 && (
-                                    <ul className="list-disc pl-3">
-                                        {releaseConditions.map((cond, i) => <li key={i}>{cond}</li>)}
-                                    </ul>
-                                )}
-                            </div>
-                            <div className="w-1/3 text-center">
-                                <Label>For and on behalf of Carrier</Label>
-                                <div className="h-16 border-b border-black mb-1"></div>
-                                <div className="text-xs font-bold uppercase">{display(localAgentName)}</div>
-                                <div className="text-[9px]">Authorized Signatory</div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        </Wrapper>
-    );
+        {/* --- Legal Declaration & Instructions --- */}
+        <div className="p-4 border-b border-black text-[10px] text-justify font-serif leading-relaxed">
+           <span className="font-bold uppercase font-sans mr-2">Release Authorization:</span>
+           To the Terminal Operator, Stevedore, or Warehouse Keeper: You are hereby authorized to deliver the above-mentioned goods to the Consignee or their authorized agent, subject to the payment of any outstanding terminal handling charges, demurrage, or storage fees. All original Bills of Lading have been surrendered, electronically voided, or otherwise satisfied. This document conveys no title to the goods but serves strictly as a logistical release instruction.
+        </div>
+      </div>
+    </Wrapper>
+  );
 };

@@ -5,348 +5,214 @@ import { getDocumentData } from "../../../utils";
 import { ShipperLetterOfInstructions, ShipperLetterOfInstructionsSchema } from "./types";
 
 export const ShipperLetterOfInstructionsTemplate: FunctionComponent<
-    TemplateProps<ShipperLetterOfInstructionsSchema>
+  TemplateProps<ShipperLetterOfInstructionsSchema>
 > = ({ document }) => {
-    const data = getDocumentData(document) as ShipperLetterOfInstructions;
+  const data = getDocumentData(document) as ShipperLetterOfInstructions;
 
-    const {
-        shipperReferenceNumber,
-        forwarderReferenceNumber,
-        dateOfInstruction,
-        relatedDocumentIds = [],
-        principalShipper: {
-            name: principalShipperName,
-            address: principalShipperAddress,
-            taxId: principalShipperTaxId,
-            contactPerson: principalShipperContact,
-        } = {},
-        consignee: {
-            name: consigneeName,
-            address: consigneeAddress,
-            contactPerson: consigneeContact,
-        } = {},
-        intermediateConsignee: {
-            name: intermediateConsigneeName,
-            address: intermediateConsigneeAddress,
-        } = {},
-        forwardingAgent: {
-            name: forwardingAgentName,
-            address: forwardingAgentAddress,
-        } = {},
-        transportInstructions: {
-            modeOfTransport,
-            incoterms,
-            portOfExport,
-            portOfDischarge,
-            finalDestination,
-            freightPaymentTerms,
-            freightPaymentDetails,
-        } = {},
-        goodsDetails = [],
-        valueAndInsurance: {
-            valueForCustoms,
-            insuranceInstructions: {
-                insureGoods = undefined,
-                insuredValue = undefined,
-                notes: insuranceNotes = undefined,
-            } = {},
-        } = {},
-        documentDistribution: {
-            documentationInstructions,
-            billOfLadingInstructions: {
-                numberOfOriginals = undefined,
-                releaseType = undefined,
-            } = {},
-            exportControl: {
-                licenseRequired = undefined,
-                licenseNumber = undefined,
-                eccn = undefined,
-            } = {},
-        } = {},
-        additionalInstructions,
-    } = data;
+  const {
+    // --- Dates ---
+    issueDate,
+    despatchDate,
 
-    // --- Helpers ---
-    const display = (value: any) => (value ? String(value) : "");
+    // --- Parties ---
+    consignee: {
+      name: consigneeName,
+      addressLine: consigneeAddress,
+      city: consigneeCity,
+      country: consigneeCountry,
+      email: consigneeEmail,
+    } = {},
+    freightForwarder: {
+      name: forwarderName,
+      addressLine: forwarderAddress,
+      city: forwarderCity,
+      country: forwarderCountry,
+      email: forwarderEmail,
+    } = {},
+    consignor: { // Usually the Shipper
+      name: consignorName,
+      addressLine: consignorAddress,
+      city: consignorCity,
+      country: consignorCountry,
+      email: consignorEmail,
+    } = {},
 
-    const formatDate = (dateStr?: string) => {
-        if (!dateStr) return "";
-        try {
-            return new Date(dateStr).toISOString().split("T")[0];
-        } catch (e) {
-            return dateStr;
-        }
-    };
+    // --- Location & Trade Terms ---
+    despatchLocationName,
+    originCountry,
+    placeOfIssue,
+    tradeTermsConditionsDescription, // e.g., "FOB Shanghai"
 
-    const formatMoney = (val?: number, curr?: string) => {
-        if (val === undefined || val === null) return "-";
-        return `${curr || ""} ${val.toFixed(2)}`;
-    };
+    // --- Weights ---
+    grossWeight,
+    netWeight,
 
-    const Label = ({ children }: { children: React.ReactNode }) => (
-        <div className="text-[9px] uppercase font-bold text-gray-500 mb-0.5 tracking-wider leading-none">
-            {children}
+    // --- Goods Details ---
+    goods = [],
+  } = data;
+
+  // Strict B&W Box Helper
+  const DataBox = ({ label, value, className = "", inverted = false, fontMono = false }: { label: string; value?: string | React.ReactNode; className?: string; inverted?: boolean; fontMono?: boolean }) => (
+    <div className={`p-3 border-r border-b border-black last:border-r-0 flex flex-col justify-start ${inverted ? "bg-black text-white" : "bg-white text-black"} ${className}`}>
+      <label className={`block text-[9px] uppercase font-bold mb-1 tracking-widest leading-none ${inverted ? "text-gray-400" : "text-gray-600"}`}>
+        {label}
+      </label>
+      <div className={`text-sm font-bold uppercase leading-tight whitespace-pre-wrap break-words ${fontMono ? "font-mono" : ""}`}>
+        {value || "-"}
+      </div>
+    </div>
+  );
+
+  return (
+    <Wrapper>
+      <div className="max-w-4xl mx-auto bg-white font-sans text-black border-2 border-black my-10 relative overflow-hidden">
+        
+        {/* --- Header Section --- */}
+        <div className="flex justify-between items-start border-b-4 border-black p-6 mb-0">
+          <div className="flex-1">
+            <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter leading-none mb-2">
+              Shipper's Letter of Instructions
+            </h1>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] border border-black px-2 py-1 inline-block">
+              Export Forwarding & Customs Authorization
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-[9px] font-bold uppercase tracking-widest mb-1">Issue Date</p>
+            <p className="text-xl font-mono font-black tracking-widest bg-black text-white px-3 py-1">
+              {issueDate || "DRAFT"}
+            </p>
+          </div>
         </div>
-    );
 
-    const CheckBox = ({ label, checked }: { label: string; checked?: boolean }) => (
-        <div className="flex items-center gap-2">
-            <div className={`w-4 h-4 border border-black flex items-center justify-center ${checked ? 'bg-black text-white' : 'bg-white'}`}>
-                {checked && <span className="text-xs">✓</span>}
-            </div>
-            <span className="text-xs font-bold uppercase">{label}</span>
-        </div>
-    );
-
-    const SectionHeader = ({ title }: { title: string }) => (
-        <div className="bg-gray-100 border-y border-black px-2 py-1 font-bold text-xs uppercase tracking-wide">
-            {title}
-        </div>
-    );
-
-    return (
-        <Wrapper data-testid="sli-template">
-            <div className="max-w-[210mm] mx-auto bg-white text-black p-8 font-sans antialiased box-border">
-
-                {/* Main Document Border */}
-                <div className="border-2 border-black">
-
-                    {/* Header */}
-                    <div className="flex border-b border-black">
-                        <div className="w-1/2 p-4 bg-gray-800 text-white flex flex-col justify-center">
-                            <h1 className="text-2xl font-bold uppercase tracking-tight">Shipper's Letter of Instructions</h1>
-                            <p className="text-[10px] opacity-80 mt-1">
-                                The Shipper issues this instruction for the Forwarding Agent to arrange shipment of goods.
-                            </p>
-                        </div>
-                        <div className="w-1/2 p-4 bg-white text-black grid grid-cols-2 gap-4">
-                            <div>
-                                <Label>Date</Label>
-                                <div className="font-bold">{formatDate(dateOfInstruction)}</div>
-                            </div>
-                            <div>
-                                <Label>Shipper Ref No.</Label>
-                                <div className="font-bold font-mono">{display(shipperReferenceNumber)}</div>
-                            </div>
-                            <div>
-                                <Label>Forwarder Ref No.</Label>
-                                <div className="font-mono">{display(forwarderReferenceNumber)}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 1. Parties */}
-                    <div className="flex border-b border-black divide-x divide-black">
-                        {/* Shipper */}
-                        <div className="w-1/3 p-3 h-40 overflow-hidden">
-                            <Label>1. Principal Shipper / Exporter</Label>
-                            <div className="mt-1 font-bold text-sm">{display(principalShipperName)}</div>
-                            <div className="text-xs mt-1 whitespace-pre-wrap">{display(principalShipperAddress)}</div>
-                            <div className="mt-2 text-[10px] text-gray-500">
-                                {principalShipperTaxId && <div>Tax ID: {principalShipperTaxId}</div>}
-                                {principalShipperContact?.name && <div>Ctc: {principalShipperContact.name}</div>}
-                            </div>
-                        </div>
-
-                        {/* Consignee */}
-                        <div className="w-1/3 p-3 h-40 overflow-hidden">
-                            <Label>2. Ultimate Consignee</Label>
-                            <div className="mt-1 font-bold text-sm">{display(consigneeName)}</div>
-                            <div className="text-xs mt-1 whitespace-pre-wrap">{display(consigneeAddress)}</div>
-                            {consigneeContact?.phone && (
-                                <div className="mt-2 text-[10px] text-gray-500">Tel: {consigneeContact.phone}</div>
-                            )}
-                        </div>
-
-                        {/* Forwarder */}
-                        <div className="w-1/3 p-3 h-40 overflow-hidden bg-gray-50">
-                            <Label>3. Forwarding Agent</Label>
-                            <div className="mt-1 font-bold text-sm">{display(forwardingAgentName)}</div>
-                            <div className="text-xs mt-1 whitespace-pre-wrap">{display(forwardingAgentAddress)}</div>
-                            {intermediateConsigneeName && (
-                                <div className="mt-2 pt-2 border-t border-gray-300">
-                                    <Label>Intermediate Consignee</Label>
-                                    <div className="text-xs font-bold">{intermediateConsigneeName}</div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* 2. Transport & Routing */}
-                    <SectionHeader title="Transport & Routing Instructions" />
-                    <div className="flex border-b border-black divide-x divide-black">
-                        <div className="w-1/4 p-2">
-                            <Label>Mode of Transport</Label>
-                            <div className="font-bold">{display(modeOfTransport)}</div>
-                        </div>
-                        <div className="w-1/4 p-2">
-                            <Label>Incoterms</Label>
-                            <div className="font-bold">{display(incoterms)}</div>
-                        </div>
-                        <div className="w-1/4 p-2">
-                            <Label>Port of Export</Label>
-                            <div className="font-bold text-xs">{display(portOfExport)}</div>
-                        </div>
-                        <div className="w-1/4 p-2">
-                            <Label>Final Destination</Label>
-                            <div className="font-bold text-xs">{display(finalDestination)}</div>
-                        </div>
-                    </div>
-
-                    {/* 3. Goods Details */}
-                    <SectionHeader title="Shipment Details" />
-                    <div className="border-b border-black">
-                        {/* Headers */}
-                        <div className="flex border-b border-black bg-gray-50 text-[10px] font-bold uppercase">
-                            <div className="w-1/5 p-2 border-r border-black">Marks & Nos</div>
-                            <div className="w-1/6 p-2 border-r border-black">Qty & Pkgs</div>
-                            <div className="w-5/12 p-2 border-r border-black">Description of Goods</div>
-                            <div className="w-1/12 p-2 border-r border-black text-right">Gross Wt</div>
-                            <div className="w-1/12 p-2 text-right">Meas.</div>
-                        </div>
-
-                        {/* Rows */}
-                        <div className="min-h-[150px]">
-                            {goodsDetails.length > 0 ? (
-                                goodsDetails.map((item, idx) => (
-                                    <div key={idx} className="flex text-xs border-b border-gray-100 last:border-0">
-                                        <div className="w-1/5 p-2 border-r border-black font-mono text-[10px] break-words">
-                                            {display(item.shippingMarks)}
-                                        </div>
-                                        <div className="w-1/6 p-2 border-r border-black">
-                                            {display(item.packageQuantity)} {display(item.packageType)}
-                                        </div>
-                                        <div className="w-5/12 p-2 border-r border-black">
-                                            <div className="font-bold uppercase">{display(item.goodsDescription)}</div>
-                                            <div className="flex gap-4 mt-1 text-[10px] text-gray-500">
-                                                {item.hsCode && <span>HS: {item.hsCode}</span>}
-                                                {item.countryOfOrigin && <span>Origin: {item.countryOfOrigin}</span>}
-                                            </div>
-                                        </div>
-                                        <div className="w-1/12 p-2 border-r border-black text-right font-mono">
-                                            {item.grossWeight?.value}
-                                        </div>
-                                        <div className="w-1/12 p-2 text-right font-mono">
-                                            {item.volume?.value}
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="p-4 text-center text-gray-400 italic">No goods details provided</div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* 4. Financials & Insurance */}
-                    <div className="flex border-b border-black divide-x divide-black">
-                        {/* Values */}
-                        <div className="w-1/2 p-3">
-                            <Label>Value for Customs</Label>
-                            <div className="font-mono font-bold mb-4">
-                                {formatMoney(valueForCustoms?.amount, valueForCustoms?.currencyCode)}
-                            </div>
-
-                            <Label>Export Control / License</Label>
-                            <div className="text-xs mt-1">
-                                {licenseRequired ? (
-                                    <span className="text-red-600 font-bold">LICENSE REQUIRED: {licenseNumber}</span>
-                                ) : (
-                                    <span className="text-gray-500">No specific license required (NLR)</span>
-                                )}
-                                {eccn && <div className="mt-1">ECCN: {eccn}</div>}
-                            </div>
-                        </div>
-
-                        {/* Insurance */}
-                        <div className="w-1/2 p-3 bg-blue-50">
-                            <div className="mb-4">
-                                <Label>Insurance Instructions</Label>
-                                <div className="flex gap-8 mt-2">
-                                    <CheckBox label="Insurance Required" checked={insureGoods} />
-                                    <CheckBox label="Do Not Insure" checked={!insureGoods} />
-                                </div>
-                            </div>
-
-                            {insureGoods && (
-                                <div className="border-t border-blue-200 pt-2">
-                                    <div className="flex justify-between">
-                                        <span className="text-xs">Insured Value:</span>
-                                        <span className="font-bold font-mono">
-                                            {formatMoney(insuredValue?.amount, insuredValue?.currencyCode)}
-                                        </span>
-                                    </div>
-                                    <div className="text-[10px] mt-1 italic text-blue-800">
-                                        {insuranceNotes || "Cover as per Institute Cargo Clauses (A)"}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* 5. Charges & Documentation */}
-                    <div className="flex border-b border-black divide-x divide-black">
-                        <div className="w-1/2 p-3">
-                            <Label>Freight Charges</Label>
-                            <div className="font-bold text-sm mt-1 mb-2">{display(freightPaymentTerms)}</div>
-
-                            {freightPaymentDetails?.paymentBy === "ThirdParty" && (
-                                <div className="text-xs border border-gray-300 p-2 bg-gray-50">
-                                    <span className="font-bold block">Bill to Third Party:</span>
-                                    {display(freightPaymentDetails.thirdPartyName)}
-                                </div>
-                            )}
-
-                            <div className="mt-4">
-                                <Label>Special Instructions</Label>
-                                <div className="text-xs italic">{display(additionalInstructions) || "None"}</div>
-                            </div>
-                        </div>
-
-                        <div className="w-1/2 p-3">
-                            <Label>Bill of Lading Instructions</Label>
-                            <div className="grid grid-cols-2 gap-4 mt-2">
-                                <div>
-                                    <span className="text-[10px] text-gray-500 block">No. of Originals</span>
-                                    <span className="font-bold">{display(numberOfOriginals)}</span>
-                                </div>
-                                <div>
-                                    <span className="text-[10px] text-gray-500 block">Release Type</span>
-                                    <span className="font-bold uppercase">{display(releaseType)}</span>
-                                </div>
-                            </div>
-                            <div className="mt-4 pt-2 border-t border-gray-200">
-                                <Label>Documentation Notes</Label>
-                                <div className="text-xs">{display(documentationInstructions)}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 6. Authorization Footer */}
-                    <div className="p-4 bg-gray-50">
-                        <p className="text-[9px] text-justify text-gray-600 mb-6">
-                            AUTHORIZATION: The Shipper certifies that the information provided herein is true and correct.
-                            The Shipper hereby authorizes the Forwarding Agent to prepare and execute any and all documents
-                            necessary for the export of the merchandise described above. The Shipper authorizes the Forwarding
-                            Agent to act as its agent for export control and customs purposes.
-                        </p>
-
-                        <div className="flex items-end justify-between">
-                            <div>
-                                <Label>Place and Date</Label>
-                                <div className="font-bold text-sm">
-                                    {formatDate(dateOfInstruction)}
-                                </div>
-                            </div>
-                            <div className="w-1/2">
-                                <Label>Authorized Signature of Shipper</Label>
-                                <div className="h-12 border-b border-black mb-1"></div>
-                                <div className="text-xs font-bold uppercase">{display(principalShipperName)}</div>
-                            </div>
-                        </div>
-                    </div>
-
+        {/* --- Parties Grid --- */}
+        <div className="grid grid-cols-2 border-b-2 border-black">
+          
+          {/* Left Column: Shipper & Consignee */}
+          <div className="border-r border-black flex flex-col">
+             {/* Shipper */}
+             <div className="p-4 border-b border-black flex-1">
+                <div className="flex items-center space-x-2 mb-3">
+                   <div className="w-3 h-3 bg-black"></div>
+                   <h3 className="text-xs font-black uppercase tracking-widest">Shipper / Exporter</h3>
                 </div>
-            </div>
-        </Wrapper>
-    );
+                <div className="text-sm font-bold uppercase mb-1">{consignorName}</div>
+                <div className="text-xs mb-2 leading-relaxed">
+                  {consignorAddress}<br/>
+                  {consignorCity}, {consignorCountry}
+                </div>
+                {consignorEmail && <div className="text-[10px] font-mono text-gray-700 mt-2">Email: {consignorEmail}</div>}
+             </div>
+             
+             {/* Consignee */}
+             <div className="p-4 flex-1">
+                <div className="flex items-center space-x-2 mb-3">
+                   <div className="w-3 h-3 border-2 border-black"></div>
+                   <h3 className="text-xs font-black uppercase tracking-widest">Consignee / Ultimate Destination</h3>
+                </div>
+                <div className="text-sm font-bold uppercase mb-1">{consigneeName}</div>
+                <div className="text-xs mb-2 leading-relaxed">
+                  {consigneeAddress}<br/>
+                  {consigneeCity}, {consigneeCountry}
+                </div>
+                {consigneeEmail && <div className="text-[10px] font-mono text-gray-700 mt-2">Email: {consigneeEmail}</div>}
+             </div>
+          </div>
+
+          {/* Right Column: Forwarder & Shipment Info */}
+          <div className="flex flex-col">
+             {/* Freight Forwarder */}
+             <div className="p-4 border-b border-black bg-gray-50 flex-1">
+                <div className="flex items-center space-x-2 mb-3">
+                   <div className="w-3 h-3 bg-gray-400"></div>
+                   <h3 className="text-xs font-black uppercase tracking-widest">Forwarding Agent</h3>
+                </div>
+                <div className="text-sm font-bold uppercase mb-1">{forwarderName}</div>
+                <div className="text-xs mb-2 leading-relaxed">
+                  {forwarderAddress}<br/>
+                  {forwarderCity}, {forwarderCountry}
+                </div>
+                {forwarderEmail && <div className="text-[10px] font-mono text-gray-700 mt-2">Email: {forwarderEmail}</div>}
+             </div>
+
+             {/* Shipment Routing */}
+             <div className="grid grid-cols-2 flex-1">
+                <DataBox label="Despatch Date" value={despatchDate} fontMono />
+                <DataBox label="Origin Country" value={originCountry} className="border-r-0" />
+                <DataBox label="Despatch Location" value={despatchLocationName} className="border-b-0" />
+                <DataBox label="Place of Issue" value={placeOfIssue} className="border-r-0 border-b-0" />
+             </div>
+          </div>
+        </div>
+
+        {/* --- Trade Terms (Incoterms) --- */}
+        <div className="border-b-2 border-black bg-black text-white p-4">
+           <label className="block text-[10px] uppercase font-bold text-gray-400 mb-2 tracking-[0.2em]">
+             Trade Terms / Conditions of Delivery
+           </label>
+           <div className="text-xl font-black uppercase tracking-widest">
+              {tradeTermsConditionsDescription || "NOT SPECIFIED"}
+           </div>
+        </div>
+
+        {/* --- Goods Details Table --- */}
+        <div className="border-b-2 border-black min-h-[250px] flex flex-col">
+          <div className="bg-gray-100 p-2 text-[9px] font-black uppercase tracking-widest border-b border-black">
+            Particulars of Goods to be Forwarded
+          </div>
+          <table className="w-full text-left table-fixed flex-1">
+            <thead className="bg-white text-[9px] font-bold uppercase tracking-widest text-gray-600 border-b border-black">
+              <tr>
+                <th className="p-3 w-16 text-center border-r border-black">Item</th>
+                <th className="p-3 w-1/2 border-r border-black">Description of Goods</th>
+                <th className="p-3 w-1/6 text-center border-r border-black">HS Code</th>
+                <th className="p-3 w-1/6 text-center border-r border-black">Packaging</th>
+                <th className="p-3 w-1/6 text-center">Qty</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm font-mono">
+              {goods.length > 0 ? goods.map((item, i) => (
+                <tr key={i} className="border-b border-gray-200 last:border-0 align-top">
+                  <td className="p-3 text-center border-r border-black font-bold text-gray-400">{i + 1}</td>
+                  <td className="p-3 border-r border-black whitespace-pre-wrap leading-relaxed uppercase font-sans font-bold text-xs">
+                    {item.description}
+                  </td>
+                  <td className="p-3 text-center border-r border-black text-[10px]">
+                    {item.hsCode || "-"}
+                  </td>
+                  <td className="p-3 text-center border-r border-black text-[10px] uppercase font-sans font-bold text-gray-600">
+                    {item.typeOfPackaging || "PKG"}
+                  </td>
+                  <td className="p-3 text-center font-black text-base">
+                    {item.numberOfPackages}
+                  </td>
+                </tr>
+              )) : (
+                <tr>
+                  <td colSpan={5} className="p-8 text-center text-gray-400 italic uppercase font-sans text-xs">No goods items declared</td>
+                </tr>
+              )}
+            </tbody>
+            {/* Totals Footer */}
+            {goods.length > 0 && (
+              <tfoot className="bg-gray-100 border-t border-black font-bold">
+                <tr>
+                  <td colSpan={4} className="p-3 text-right text-[10px] uppercase tracking-widest border-r border-black">Total Packages</td>
+                  <td className="p-3 text-center text-lg font-black">
+                    {goods.reduce((acc, curr) => acc + (curr.numberOfPackages || 0), 0)}
+                  </td>
+                </tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+
+        {/* --- Summary Weights --- */}
+        <div className="grid grid-cols-2 border-b-2 border-black">
+           <DataBox label="Gross Weight" value={grossWeight != null ? `${grossWeight}` : "N/A"} fontMono />
+           <DataBox label="Net Weight" value={netWeight != null ? `${netWeight}` : "N/A"} fontMono className="border-r-0" />
+        </div>
+      </div>
+    </Wrapper>
+  );
 };

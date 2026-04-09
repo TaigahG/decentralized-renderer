@@ -1,115 +1,71 @@
 import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
+/**
+ * Represents a Packing List.
+ * A shipping document that provides detailed information about the contents of a package 
+ * or shipment, including weights, volumes, and packaging types, but typically excluding pricing.
+ */
 export interface PackingList {
-  "@context"?: string | object;
-  "@id"?: string;
-  "@type"?: string;
+  // --- Document Identifiers ---
+  documentId?: string;
+  shipmentId?: string;
 
-  packingListNumber?: string;
-  invoiceReferenceNumber?: string;
-  
+  // --- Dates ---
   /** Date format: YYYY-MM-DD */
-  dateOfIssue?: string;
-  
-  buyerOrderNumber?: string;
-  poNumber?: string;
+  issueDate?: string;
 
-  seller?: Seller;
-  buyer?: Buyer;
-  transportDetails?: TransportDetails;
+  // --- Parties ---
+  buyer?: PackingListParty;
+  consignee?: PackingListParty;
+  seller?: PackingListParty;
 
-  /** List of containers or handling units */
-  containers?: Container[]; // Mapped from @set container
+  // --- Location ---
+  placeOfTheDeliveryByCarrier?: DeliveryPlace;
 
-  totals?: PackingListTotals;
+  // --- Weights & Measures ---
+  netWeight?: number;
+  volume?: number;
 
-  digitalSignature?: string;
-  documentHash?: string;
-  links?: string | string[];
+  // --- Goods Details ---
+  /** List of goods and how they are packed */
+  goods?: PackingListGoodsItem[]; // Mapped from @set container
+
+  // --- Transport Details ---
+  conveyanceReferenceNumber?: string; // e.g., Voyage or Flight Number
+  transportMeansIdentifier?: string;  // e.g., Vessel Name
+  vehicleRegistrationNumber?: string; // e.g., Truck License Plate
 }
 
 // --- Sub-Interfaces ---
 
-export interface Seller {
+/**
+ * Base representation of a party in the Packing List.
+ * Shared across Buyer, Consignee, and Seller.
+ */
+export interface PackingListParty {
   name?: string;
-  address?: string;
-  countryCode?: string;
-  contactPerson?: ContactPerson;
-}
-
-export interface Buyer {
-  name?: string;
-  billToAddress?: string;
-  shipToAddress?: string;
-  countryCode?: string;
-  contactPerson?: ContactPerson;
-}
-
-export interface ContactPerson {
-  name?: string;
-  phone?: string;
+  addressLine?: string;
+  city?: string;
+  country?: string;
   email?: string;
 }
 
-export interface TransportDetails {
-  modeOfTransport?: string;
-  bookingReference?: string;
-  billOfLadingNumber?: string;
-  vesselFlightName?: string;
-  portOfLoading?: string;
-  portOfDischarge?: string;
+/**
+ * Represents the specific delivery location.
+ */
+export interface DeliveryPlace {
+  name?: string;
+  address?: string; // Note: Context uses 'address' here, not 'addressLine'
 }
 
-export interface Container {
-  containerNumber?: string;
-  sealNumber?: string;
-  containerType?: string;
-  /** List of packages within this container */
-  packages?: PackingListPackage[]; // Mapped from @set container
-}
-
-export interface PackingListPackage {
-  marksAndNumbers?: string;
-  packageType?: string;
+/**
+ * Represents an individual packaged goods line item.
+ */
+export interface PackingListGoodsItem {
+  description?: string;
   numberOfPackages?: number;
-  dimensions?: Dimensions;
-  
-  /** List of goods items inside this package */
-  goods?: GoodsItem[]; // Mapped from @set container
-  
-  packageNetWeight?: Measurement;
-  packageGrossWeight?: Measurement;
-}
-
-export interface GoodsItem {
-  productDescription?: string;
-  sku?: string;
-  partNumber?: string;
-  quantityInPackage?: number;
-  unitOfMeasure?: string;
-  netWeight?: Measurement;
-  grossWeight?: Measurement;
-}
-
-export interface Dimensions {
-  length?: number;
-  width?: number;
-  height?: number;
-  unit?: string;
-}
-
-export interface Measurement {
-  value?: number;
-  unit?: string;
-}
-
-export interface PackingListTotals {
-  totalNetWeight?: Measurement;
-  totalGrossWeight?: Measurement;
-  totalVolume?: Measurement;
-  totalPackages?: number;
-  totalQuantity?: number;
+  typeOfPackaging?: string; // e.g., "Pallets", "Cartons", "Crates"
 }
 
 export type PackingListW3C = SignedVerifiableCredential & {
