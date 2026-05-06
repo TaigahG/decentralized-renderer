@@ -5,273 +5,220 @@ import { getDocumentData } from "../../../utils";
 import { CargoInsurance, CargoInsuranceSchema } from "./types";
 
 export const CargoInsuranceTemplate: FunctionComponent<
-  TemplateProps<CargoInsuranceSchema>
+   TemplateProps<CargoInsuranceSchema>
 > = ({ document }) => {
-  const data = getDocumentData(document) as CargoInsurance;
+   const data = getDocumentData(document) as CargoInsurance;
 
-  const {
-    certificateIdentifier,
-    openPolicyReference,
-    issueDate,
-    placeOfIssue,
-    insuredParty: {
-      name: insuredPartyName,
-      address: insuredPartyAddress,
-    } = {},
-    insuranceProvider: {
-      name: insuranceProviderName,
-      address: insuranceProviderAddress,
-    } = {},
-    claimsPayableTo: {
-      name: claimsPayableToName,
-      address: claimsPayableToAddress,
-    } = {},
-    claimsSettlingAgent: {
-      name: claimsSettlingAgentName,
-      address: claimsSettlingAgentAddress,
-      contactDetails: claimsSettlingAgentContactDetails,
-    } = {},
-    transportInformation: {
-      meansOfTransportName,
-      loadingLocation,
-      dischargeLocation,
-      departureDate,
-      blReference,
-    } = {},
-    goodsDetails = [],
-    valuation: {
-      invoiceReference,
-      incoterms,
-      insuredValue: {
-        currencyCode: insuredValueCurrencyCode = undefined,
-        amount: insuredValueAmount = undefined,
+   const {
+      // --- Document & Shipment Identifiers ---
+      invoiceNumber,
+      insurancePolicyNumber,
+
+      // --- Dates ---
+      issuedDate,
+      estimatedTimeOfDeparture,
+
+      // --- Parties ---
+      insuredParty: {
+         name: insuredName,
+         addressLine: insuredAddress,
+         city: insuredCity,
+         country: insuredCountry,
+         email: insuredEmail,
       } = {},
-      basisOfValuation,
-    } = {},
-    coverage: {
-      coverageConditionCode,
-      warClauseIncluded,
-      strikesClauseIncluded,
-      deductible: {
-        currencyCode: deductibleCurrencyCode = undefined,
-        amount: deductibleAmount = undefined,
+      insuranceCompany: {
+         name: insurerName,
+         addressLine: insurerAddress,
+         city: insurerCity,
+         country: insurerCountry,
+         email: insurerEmail,
       } = {},
-      surveyClause,
-    } = {},
-  } = data;
+      insuranceClaimAdjuster: {
+         name: adjusterName,
+         address: adjusterAddress, // Note: Maps from 'address'
+         email: adjusterEmail,
+      } = {},
 
-  // --- Helpers ---
-  const display = (value: any) => (value ? String(value) : "");
-  
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "";
-    try {
-      return new Date(dateStr).toISOString().split("T")[0];
-    } catch (e) {
-      return dateStr;
-    }
-  };
+      // --- Locations & Routing ---
+      originalLoadingLocation,
+      placeOrDeparture,
+      baseportUnloadingLocation,
+      placeOfTheDeliveryByCarrier: {
+         name: deliveryLocationName,
+         addressLine: deliveryLocationAddress,
+      } = {},
+      documentPlaceOfIssue,
 
-  const formatMoney = (val?: number | string, curr?: string) => {
-    if (val === undefined || val === null) return "";
-    const num = Number(val);
-    const c = curr || "";
-    return isNaN(num) ? String(val) : `${c} ${num.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}`;
-  };
+      // --- Insurance Details ---
+      insuranceCondition,
+      insuredValueAmount,
 
-  const Label = ({ children }: { children: React.ReactNode }) => (
-    <div className="text-[9px] uppercase font-bold text-gray-500 mb-0.5 tracking-wider leading-none">
-      {children}
-    </div>
-  );
+      // --- Goods Details ---
+      goods = [],
+   } = data;
 
-  return (
-    <Wrapper data-testid="cargo-insurance-template">
-      <div className="max-w-[210mm] mx-auto bg-white text-black p-8 font-sans antialiased box-border">
-        
-        {/* Main Document Frame */}
-        <div className="border-4 border-gray-800 p-1">
-          <div className="border border-gray-400 p-6">
+   // Strict B&W Box Helper
+   const DataBox = ({ label, value, className = "", inverted = false, fontMono = false }: { label: string; value?: string | React.ReactNode; className?: string; inverted?: boolean; fontMono?: boolean }) => (
+      <div className={`p-3 border-r border-b border-black last:border-r-0 flex flex-col justify-start ${inverted ? "bg-black text-white" : "bg-white text-black"} ${className}`}>
+         <label className={`block text-[9px] uppercase font-bold mb-1 tracking-widest leading-none ${inverted ? "text-gray-400" : "text-gray-600"}`}>
+            {label}
+         </label>
+         <div className={`text-sm font-bold uppercase leading-tight whitespace-pre-wrap break-words ${fontMono ? "font-mono" : ""}`}>
+            {value || "-"}
+         </div>
+      </div>
+   );
 
-            {/* Header: Provider & Reference */}
-            <div className="flex justify-between items-start mb-8 border-b-2 border-black pb-4">
-               <div>
-                  <h1 className="text-3xl font-serif font-bold tracking-wide text-gray-900 mb-2">
-                     CERTIFICATE OF INSURANCE
+   return (
+      <Wrapper>
+         <div className="max-w-4xl mx-auto bg-white font-sans text-black border-2 border-black my-10 relative overflow-hidden">
+            
+            {/* --- Header Section --- */}
+            <div className="flex justify-between items-start border-b-4 border-black p-6 mb-0">
+               <div className="flex-1">
+                  <h1 className="text-4xl font-black uppercase tracking-tighter leading-none mb-2">
+                     Certificate of Insurance
                   </h1>
-                  <div className="text-sm font-bold uppercase">{display(insuranceProviderName)}</div>
-                  <div className="text-xs text-gray-600 whitespace-pre-wrap max-w-sm">{display(insuranceProviderAddress)}</div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] border border-black px-2 py-1 inline-block">
+                     Marine & Transit Cargo Policy
+                  </p>
                </div>
                <div className="text-right">
-                  <div className="mb-2">
-                     <Label>Certificate No.</Label>
-                     <div className="text-xl font-mono font-bold">{display(certificateIdentifier)}</div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest mb-1">Policy / Certificate No.</p>
+                  <p className="text-2xl font-mono font-black tracking-widest bg-black text-white px-3 py-1">
+                     {insurancePolicyNumber || "DRAFT"}
+                  </p>
+               </div>
+            </div>
+
+            {/* --- Key Identifiers --- */}
+            <div className="grid grid-cols-4 border-b-2 border-black bg-gray-50">
+               <DataBox label="Date of Issue" value={issuedDate} fontMono className="bg-transparent" />
+               <DataBox label="Place of Issue" value={documentPlaceOfIssue} fontMono className="bg-transparent" />
+               <DataBox label="Commercial Invoice Ref" value={invoiceNumber} fontMono className="bg-transparent" />
+               <DataBox label="Est. Time of Departure (ETD)" value={estimatedTimeOfDeparture} fontMono className="bg-transparent border-r-0" />
+            </div>
+
+            {/* --- Parties Section --- */}
+            <div className="grid grid-cols-2 border-b-2 border-black">
+               {/* Assured Party */}
+               <div className="border-r border-black p-4">
+                  <div className="flex items-center space-x-2 mb-3">
+                     <div className="w-3 h-3 bg-black"></div>
+                     <h3 className="text-xs font-black uppercase tracking-widest">Insured Party (Assured)</h3>
                   </div>
-                  <div>
-                     <Label>Open Policy / Cover Ref</Label>
-                     <div className="font-mono">{display(openPolicyReference)}</div>
+                  <div className="text-sm font-bold uppercase mb-1">{insuredName}</div>
+                  <div className="text-xs mb-2 leading-relaxed">
+                     {insuredAddress}<br/>
+                     {insuredCity}, {insuredCountry}
+                  </div>
+                  {insuredEmail && <div className="text-[10px] font-mono text-gray-700 mt-2">Email: {insuredEmail}</div>}
+               </div>
+
+               {/* Insurance Company */}
+               <div className="p-4 bg-gray-50">
+                  <div className="flex items-center space-x-2 mb-3">
+                     <div className="w-3 h-3 border-2 border-black"></div>
+                     <h3 className="text-xs font-black uppercase tracking-widest">Insurance Company</h3>
+                  </div>
+                  <div className="text-sm font-bold uppercase mb-1">{insurerName}</div>
+                  <div className="text-xs mb-2 leading-relaxed">
+                     {insurerAddress}<br/>
+                     {insurerCity}, {insurerCountry}
+                  </div>
+                  {insurerEmail && <div className="text-[10px] font-mono text-gray-700 mt-2">Email: {insurerEmail}</div>}
+               </div>
+            </div>
+
+            {/* --- Financials (Inverted Block for High Visibility) --- */}
+            <div className="bg-black text-white p-6 border-b-2 border-black flex justify-between items-center">
+               <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-400 mb-2 tracking-[0.2em]">Total Insured Value</label>
+                  <div className="text-4xl font-black font-mono tracking-tighter">
+                     {insuredValueAmount != null ? Number(insuredValueAmount).toLocaleString(undefined, { minimumFractionDigits: 2 }) : "NOT DECLARED"}
+                  </div>
+               </div>
+               <div className="text-right">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Coverage Scope</div>
+                  <div className="text-sm font-bold uppercase tracking-widest border border-white px-2 py-1 inline-block">
+                     110% of CIF Value
                   </div>
                </div>
             </div>
 
-            {/* Assured Party */}
-            <div className="mb-6 p-3 bg-gray-50 border border-gray-200">
-               <Label>This is to Certify that this Company has insured the goods described below for the account of:</Label>
-               <div className="text-sm font-bold mt-1">{display(insuredPartyName)}</div>
-               <div className="text-xs">{display(insuredPartyAddress)}</div>
+            {/* --- Voyage / Routing --- */}
+            <div className="grid grid-cols-4 border-b-2 border-black">
+               <DataBox label="Place of Receipt" value={placeOrDeparture} />
+               <DataBox label="Port of Loading" value={originalLoadingLocation} />
+               <DataBox label="Port of Discharge" value={baseportUnloadingLocation} />
+               <DataBox label="Place of Delivery" value={deliveryLocationName || deliveryLocationAddress} className="border-r-0" />
             </div>
 
-            {/* Transport Grid */}
-            <div className="grid grid-cols-4 gap-4 border-y border-black py-4 mb-6">
-               <div>
-                  <Label>Vessel / Conveyance</Label>
-                  <div className="font-bold text-sm">{display(meansOfTransportName)}</div>
+            {/* --- Cargo Description Table --- */}
+            <div className="border-b-2 border-black min-h-[200px] flex flex-col">
+               <div className="bg-gray-100 p-2 text-[9px] font-black uppercase tracking-widest border-b border-black">
+                  Subject Matter Insured
                </div>
-               <div>
-                  <Label>Sailing On/About</Label>
-                  <div className="font-bold text-sm">{formatDate(departureDate)}</div>
-               </div>
-               <div>
-                  <Label>From</Label>
-                  <div className="font-bold text-sm">{display(loadingLocation)}</div>
-               </div>
-               <div>
-                  <Label>To</Label>
-                  <div className="font-bold text-sm">{display(dischargeLocation)}</div>
-               </div>
+               <table className="w-full text-left table-fixed flex-1">
+                  <thead className="bg-white text-[9px] font-bold uppercase tracking-widest text-gray-600 border-b border-black">
+                     <tr>
+                        <th className="p-3 w-16 text-center border-r border-black">Item</th>
+                        <th className="p-3 w-7/12 border-r border-black">Description of Goods</th>
+                        <th className="p-3 w-2/12 text-center border-r border-black">HS Code</th>
+                        <th className="p-3 w-2/12 text-center">Packages</th>
+                     </tr>
+                  </thead>
+                  <tbody className="text-sm font-mono">
+                     {goods.length > 0 ? goods.map((item, i) => (
+                        <tr key={i} className="border-b border-gray-200 last:border-0 align-top">
+                           <td className="p-3 text-center border-r border-black font-bold text-gray-400">{i + 1}</td>
+                           <td className="p-3 border-r border-black whitespace-pre-wrap leading-relaxed uppercase font-sans font-bold text-xs">
+                              {item.description}
+                           </td>
+                           <td className="p-3 text-center border-r border-black text-[10px]">
+                              {item.hsCode || "-"}
+                           </td>
+                           <td className="p-3 text-center font-black text-base">
+                              {item.numberOfPackages}
+                           </td>
+                        </tr>
+                     )) : (
+                        <tr>
+                           <td colSpan={4} className="p-8 text-center text-gray-400 italic uppercase font-sans text-xs">No goods items declared</td>
+                        </tr>
+                     )}
+                  </tbody>
+               </table>
             </div>
 
-            {/* Goods & Valuation Section */}
-            <div className="flex mb-6 border-b border-black pb-6">
-               {/* Left: Goods Description */}
-               <div className="w-2/3 pr-6 border-r border-gray-300">
-                  <div className="mb-2 flex justify-between">
-                      <Label>Marks & Numbers</Label>
-                      <Label>Description of Goods</Label>
+            {/* --- Conditions & Claims (Critical Legal Info) --- */}
+            <div className="grid grid-cols-2 border-b-2 border-black">
+               <div className="p-4 border-r border-black flex flex-col">
+                  <label className="block text-[9px] uppercase font-bold mb-2 tracking-widest text-gray-600 border-b border-black pb-1">
+                     Conditions of Insurance
+                  </label>
+                  <div className="text-sm font-bold uppercase leading-relaxed text-justify mt-2">
+                     {insuranceCondition || "SUBJECT TO INSTITUTE CARGO CLAUSES (A), INSTITUTE WAR CLAUSES (CARGO), AND INSTITUTE STRIKES CLAUSES (CARGO)."}
                   </div>
-                  
-                  {goodsDetails.length > 0 ? (
-                     goodsDetails.map((item, index) => (
-                        <div key={index} className="flex text-xs mb-3">
-                           <div className="w-1/3 pr-2 font-mono text-gray-600 break-words">
-                              {display(item.shippingMarks)}
-                           </div>
-                           <div className="w-2/3">
-                              <span className="font-bold">{item.packageQuantity} {item.packageType}</span> <br/>
-                              {display(item.goodsDescription)}
-                              {item.grossWeight && (
-                                 <div className="mt-1 text-gray-500">
-                                    GW: {item.grossWeight.value} {item.grossWeight.unit}
-                                 </div>
-                              )}
-                           </div>
-                        </div>
-                     ))
-                  ) : (
-                     <div className="text-xs italic text-gray-400">No goods details provided</div>
-                  )}
-                  
-                  {blReference && (
-                     <div className="mt-4 pt-2 border-t border-dashed border-gray-300">
-                        <Label>Bill of Lading Ref</Label>
-                        <div className="text-xs font-mono">{blReference}</div>
+               </div>
+               
+               <div className="p-4 bg-gray-50 flex flex-col">
+                  <label className="block text-[9px] uppercase font-bold mb-2 tracking-widest text-gray-600 border-b border-black pb-1">
+                     In the event of claim apply to
+                  </label>
+                  <div className="text-sm font-bold uppercase mt-2">{adjusterName || insurerName}</div>
+                  <div className="text-xs mt-1 leading-relaxed text-gray-700">
+                     {adjusterAddress || insurerAddress}
+                  </div>
+                  {(adjusterEmail || insurerEmail) && (
+                     <div className="text-[10px] font-mono text-gray-700 mt-2 pt-2 border-t border-gray-300">
+                        Claims Email: {adjusterEmail || insurerEmail}
                      </div>
                   )}
                </div>
-
-               {/* Right: Insured Value (The Big Number) */}
-               <div className="w-1/3 pl-6 flex flex-col justify-center">
-                  <Label>Sum Insured</Label>
-                  <div className="text-2xl font-bold font-mono text-gray-900 mt-1 mb-1">
-                     {formatMoney(insuredValueAmount, insuredValueCurrencyCode)}
-                  </div>
-                  <div className="text-xs text-gray-500 mb-4 uppercase">
-                     {basisOfValuation ? `Basis: ${basisOfValuation}` : "Agreed Value"}
-                  </div>
-
-                  <div className="text-xs space-y-1 pt-4 border-t border-gray-300">
-                     {invoiceReference && <div><span className="text-gray-500">Inv Ref:</span> {invoiceReference}</div>}
-                     {incoterms && <div><span className="text-gray-500">Term:</span> {incoterms}</div>}
-                  </div>
-               </div>
             </div>
 
-            {/* Coverage & Conditions */}
-            <div className="mb-8 p-4 border border-gray-300 bg-gray-50 text-xs">
-               <Label>Conditions of Coverage</Label>
-               <div className="font-bold mt-1 mb-2 text-sm">{display(coverageConditionCode)}</div>
-               
-               <div className="grid grid-cols-2 gap-4">
-                  <div>
-                     <ul className="list-disc pl-4 space-y-1 text-gray-700">
-                        <li>
-                           Institute War Clauses: <strong>{warClauseIncluded ? "INCLUDED" : "EXCLUDED"}</strong>
-                        </li>
-                        <li>
-                           Institute Strikes Clauses: <strong>{strikesClauseIncluded ? "INCLUDED" : "EXCLUDED"}</strong>
-                        </li>
-                        {surveyClause && <li>{surveyClause}</li>}
-                     </ul>
-                  </div>
-                  <div>
-                     {deductibleAmount && (
-                        <div className="border p-2 bg-white">
-                           <Label>Deductible / Excess</Label>
-                           <div className="font-mono text-red-600 font-bold">
-                              {formatMoney(deductibleAmount, deductibleCurrencyCode)}
-                           </div>
-                           <div className="text-[10px] text-gray-400">each and every loss</div>
-                        </div>
-                     )}
-                  </div>
-               </div>
-            </div>
-
-            {/* Claims & Survey Agent (Actionable Info) */}
-            <div className="grid grid-cols-2 gap-8 mb-8">
-               <div className="p-3 border-l-4 border-black">
-                  <Label>Claims Payable By (Settling Agent)</Label>
-                  <div className="font-bold text-sm mt-1">{display(claimsPayableToName)}</div>
-                  <div className="text-xs text-gray-600 whitespace-pre-wrap">{display(claimsPayableToAddress)}</div>
-               </div>
-
-               <div className="p-3 border-l-4 border-black">
-                  <Label>Survey Agent (In event of loss/damage notify:)</Label>
-                  <div className="font-bold text-sm mt-1">{display(claimsSettlingAgentName)}</div>
-                  <div className="text-xs text-gray-600 whitespace-pre-wrap">{display(claimsSettlingAgentAddress)}</div>
-                  <div className="mt-2 text-xs font-mono">{display(claimsSettlingAgentContactDetails)}</div>
-               </div>
-            </div>
-
-            {/* Footer: Date & Signature */}
-            <div className="flex justify-between items-end pt-6 border-t-2 border-black">
-               <div>
-                  <Label>Place and Date of Issue</Label>
-                  <div className="text-sm font-bold">
-                     {display(placeOfIssue)}, {formatDate(issueDate)}
-                  </div>
-               </div>
-               
-               <div className="text-center">
-                  <div className="mb-2 h-12 w-48 border-b border-black flex items-end justify-center">
-                     {/* Signature Image would go here */}
-                     <span className="text-[10px] italic text-gray-400 opacity-50">Authorized Signature</span>
-                  </div>
-                  <div className="text-xs font-bold uppercase">For {display(insuranceProviderName)}</div>
-               </div>
-            </div>
-
-            {/* Disclaimer */}
-            <div className="mt-8 text-[9px] text-gray-400 text-center leading-tight max-w-2xl mx-auto">
-               This certificate represents the insurance cover effected under the Open Policy referenced above. 
-               The original policy remains the sole contract of insurance. In the event of any conflict between this 
-               certificate and the policy, the policy shall prevail. Liability of the Insurers is limited to the terms, 
-               conditions, and limits of the policy.
-            </div>
-
-          </div>
-        </div>
-      </div>
-    </Wrapper>
-  );
+         </div>
+      </Wrapper>
+   );
 };

@@ -1,53 +1,50 @@
 import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
+/**
+ * Represents an Air Cargo Manifest.
+ * A document detailing the total cargo on board an aircraft, typically used 
+ * by customs and airport authorities to process and clear incoming/outgoing freight.
+ */
 export interface AirCargoManifest {
-  "@context"?: string | object;
-  "@id"?: string;
-  "@type"?: string;
+  // --- Parties ---
+  carrier?: AirCargoManifestParty;
+  transportEquipmentOperator?: AirCargoManifestParty;
 
-  // --- Flight Information ---
-  airlinePrefix?: string;
-  flightNumber?: string;
-  /** Date format: YYYY-MM-DD */
-  dateOfFlight?: string;
-  aircraftRegistration?: string;
-  ownerOperator?: string; // Airline or Operator Name
+  // --- Locations & Routing ---
+  originalLoadingLocation?: string;
+  placeOrDeparture?: string; 
+  arrivalLocation?: string;
 
-  // --- Route Information ---
-  pointOfLoading?: string;   // IATA Airport Code (e.g., "JFK")
-  pointOfUnloading?: string; // IATA Airport Code (e.g., "LHR")
+  // --- Goods Details ---
+  /** List of consolidated goods summaries covered under this air manifest */
+  goods?: AirCargoManifestGoodsItem[]; // Mapped from @set container
 
-  // --- Cargo Details ---
-  /** List of Air Waybills (AWBs) included in this manifest */
-  awbList?: ManifestAWBItem[]; // Mapped from @set container
-
-  // --- Metadata ---
-  digitalSignature?: string;
-  documentHash?: string;
-  links?: string | string[];
+  // --- Transport Details ---
+  conveyanceReferenceNumber?: string; // e.g., Flight Number
+  vehicleRegistrationNumber?: string; // e.g., Aircraft Tail Number
 }
 
 // --- Sub-Interfaces ---
 
-export interface ManifestAWBItem {
-  mawbNumber?: string; // Master Air Waybill Number
-  numberOfPieces?: number;
-  
-  weight?: Measurement;
-  volumeDensity?: Measurement; // Often used for volumetric weight calculation
-  
-  natureOfGoods?: string;
-  
-  /** List of IATA special handling codes (e.g., "PER", "AVI", "DGR") */
-  specialHandlingCodes?: string[]; // Mapped from @set container
-  
-  uldNumber?: string; // Unit Load Device ID (e.g., "AKE12345AA")
+/**
+ * Base representation of a party in the Air Cargo Manifest.
+ * Shared across Carrier and Transport Equipment Operator.
+ */
+export interface AirCargoManifestParty {
+  name?: string;
+  addressLine?: string;
+  city?: string;
+  country?: string;
+  email?: string;
 }
 
-export interface Measurement {
-  value?: number;
-  unit?: string;
+/**
+ * Represents a summarized goods line item within the air manifest.
+ */
+export interface AirCargoManifestGoodsItem {
+  description?: string;
+  consignmentSummaryDescription?: string;
 }
 
 export type AirCargoManifestW3C = SignedVerifiableCredential & {

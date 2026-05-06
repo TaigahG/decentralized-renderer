@@ -1,94 +1,72 @@
 import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
+/**
+ * Represents a Road Consignment Note (CMR).
+ * A standard document used in international road freight transport that serves as proof 
+ * of the contract of carriage, receipt of the goods, and delivery instructions.
+ */
 export interface RoadConsignmentNote {
-  "@context"?: string | object;
-  "@id"?: string;
-  "@type"?: string;
+  documentIdentifier?: string; // Often the CMR number
+
+  // --- Dates ---
+  /** Date format: YYYY-MM-DD */
+  issueDate?: string;
+  /** Date format: YYYY-MM-DD */
+  deliveryDate?: string;
+  /** Date format: YYYY-MM-DD */
+  consignmentLoadingDate?: string;
 
   // --- Parties ---
-  sender?: CMRParty;
-  consignee?: CMRParty;
-  carrier?: CMRCarrier;
+  buyer?: RoadParty;
+  carrierTransportServicesProvider?: RoadParty;
+  consignee?: RoadParty;
+  consignor?: RoadParty;
+  issuer?: RoadParty;
 
-  // --- Transport Details ---
-  placeOfTakingOver?: string;
-  /** Date format: ISO 8601 DateTime (YYYY-MM-DDThh:mm:ss) */
-  dateOfTakingOver?: string;
-  placeOfDelivery?: string;
+  // --- Locations & Routing ---
+  placeOfTheDeliveryOfTheGoods?: string;
+  destinationCountry?: string;
+  baseportUnloadingLocation?: string;
+  placeOfIssue?: string;
 
-  // --- Goods Description ---
-  marksAndNumbers?: string;
-  numberOfPackages?: number;
-  methodOfPacking?: string;
-  natureOfGoods?: string;
-  
-  dangerousGoods?: DangerousGoodsDetails;
-  
-  grossWeight?: Measurement;
-  volume?: Measurement;
+  // --- Weights & Measures ---
+  grossWeight?: number;
+  grossWeightUnit?: string; // e.g., "KGM"
+  volume?: number;
+  volumeUnit?: string; // e.g., "MTQ"
 
-  // --- Reservations & Instructions ---
-  carrierReservations?: CarrierReservations;
-  senderInstructions?: string; // Instructions for Customs, etc.
-  specialAgreements?: string;
+  // --- Goods Details ---
+  /** List of goods covered under this road consignment note */
+  goods?: RoadGoodsItem[]; // Mapped from @set container
 
-  // --- Execution ---
-  establishedAt?: string; // Place where the document was created
-  /** Date format: YYYY-MM-DD */
-  establishedOn?: string;
-  
-  signatures?: CMRSignatures;
-
-  // --- Metadata ---
-  digitalSignature?: string;
-  documentHash?: string;
-  links?: string | string[];
+  // --- Transport & Equipment ---
+  transportMeansIdentifier?: string; // e.g., Truck make/model or fleet ID
+  vehicleRegistrationNumber?: string; // e.g., License plate number of the truck/trailer
+  transportEquipmentIdentifier?: string; // e.g., Container or swap body number
 }
 
 // --- Sub-Interfaces ---
 
-export interface CMRParty {
+/**
+ * Base representation of a party in the Road Consignment Note.
+ * Shared across Buyer, Carrier, Consignee, Consignor, and Issuer.
+ */
+export interface RoadParty {
   name?: string;
-  address?: string;
-  countryCode?: string;
+  addressLine?: string;
+  city?: string;
+  country?: string;
+  email?: string;
 }
 
-export interface CMRCarrier {
-  name?: string;
-  address?: string;
-  stamp?: string; // Text representation or URL to stamp image
-}
-
-export interface DangerousGoodsDetails {
-  isDangerous?: boolean;
-  adrClass?: string; // ADR Class (e.g., "3" for Flammable Liquids)
-  unNumber?: string; // UN ID (e.g., "1203")
-}
-
-export interface Measurement {
-  value?: number;
-  unit?: string;
-}
-
-export interface CarrierReservations {
-  reservationText?: string;
-  damagePresentOnPickup?: boolean;
-  /** List of photo URLs or references */
-  damagePhotos?: string[]; // Mapped from @set container
-}
-
-export interface CMRSignatures {
-  senderSignature?: SignatureDetail;
-  carrierSignature?: SignatureDetail;
-  consigneeSignature?: SignatureDetail;
-}
-
-export interface SignatureDetail {
-  signature?: string; // Name or Digital Signature String
-  stamp?: string;
-  /** Date format: ISO 8601 DateTime */
-  date?: string;
+/**
+ * Represents an individual goods line item in the road shipment.
+ */
+export interface RoadGoodsItem {
+  description?: string;
+  numberOfPackages?: number;
+  hsCode?: string; // Harmonized System Code for customs
 }
 
 export type RoadConsignmentNoteW3C = SignedVerifiableCredential & {

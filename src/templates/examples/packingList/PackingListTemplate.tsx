@@ -2,265 +2,216 @@ import { TemplateProps } from "@tradetrust-tt/decentralized-renderer-react-compo
 import React, { FunctionComponent } from "react";
 import { Wrapper } from "../../../core/Wrapper";
 import { getDocumentData } from "../../../utils";
-import { Measurement, PackingList, PackingListSchema } from "./types";
+import { PackingList, PackingListSchema } from "./types";
 
 export const PackingListTemplate: FunctionComponent<
-  TemplateProps<PackingListSchema>
+   TemplateProps<PackingListSchema>
 > = ({ document }) => {
-  const data = getDocumentData(document) as PackingList;
+   const data = getDocumentData(document) as PackingList;
 
-  const {
-    packingListNumber,
-    invoiceReferenceNumber,
-    dateOfIssue,
-    buyerOrderNumber,
-    poNumber,
-    seller: {
-      name: sellerName,
-      address: sellerAddress,
-      contactPerson: sellerContact,
-    } = {},
-    buyer: {
-      name: buyerName,
-      billToAddress,
-      shipToAddress,
-      contactPerson: buyerContact,
-    } = {},
-    transportDetails: {
-      modeOfTransport,
-      billOfLadingNumber,
-      vesselFlightName,
-      portOfLoading,
-      portOfDischarge,
-    } = {},
-    containers = [],
-    totals: {
-      totalNetWeight,
-      totalGrossWeight,
-      totalVolume,
-      totalPackages,
-      totalQuantity,
-    } = {},
-  } = data;
+   const {
+      // --- Dates ---
+      issueDate,
 
-  // --- Helpers ---
-  const display = (value: any) => (value ? String(value) : "");
-  
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "";
-    try {
-      return new Date(dateStr).toISOString().split("T")[0];
-    } catch (e) {
-      return dateStr;
-    }
-  };
+      // --- Parties ---
+      buyer: {
+         name: buyerName,
+         addressLine: buyerAddress,
+         city: buyerCity,
+         country: buyerCountry,
+         email: buyerEmail,
+      } = {},
+      consignee: {
+         name: consigneeName,
+         addressLine: consigneeAddress,
+         city: consigneeCity,
+         country: consigneeCountry,
+         email: consigneeEmail,
+      } = {},
+      seller: {
+         name: sellerName,
+         addressLine: sellerAddress,
+         city: sellerCity,
+         country: sellerCountry,
+         email: sellerEmail,
+      } = {},
 
-  const formatWeight = (m?: Measurement) => 
-    m?.value ? `${m.value} ${m.unit || "kg"}` : "-";
+      // --- Location ---
+      placeOfTheDeliveryByCarrier: {
+         name: deliveryLocationName,
+         address: deliveryLocationAddress, // Note: Maps from 'address', not 'addressLine'
+      } = {},
 
-  const Label = ({ children }: { children: React.ReactNode }) => (
-    <div className="text-[9px] uppercase font-bold text-gray-500 mb-0.5 tracking-wider leading-none">
-      {children}
-    </div>
-  );
+      // --- Weights & Measures ---
+      netWeight,
+      volume,
 
-  const Field = ({ label, value, className = "" }: any) => (
-    <div className={`mb-2 ${className}`}>
-      <Label>{label}</Label>
-      <div className="text-xs font-medium text-black min-h-[1rem] break-words">
-        {display(value)}
+      // --- Goods Details ---
+      goods = [],
+
+      // --- Transport Details ---
+      conveyanceReferenceNumber,
+      transportMeansIdentifier,
+      vehicleRegistrationNumber,
+   } = data;
+
+   // Strict B&W Box Helper
+   const DataBox = ({ label, value, className = "", inverted = false, fontMono = false }: { label: string; value?: string | React.ReactNode; className?: string; inverted?: boolean; fontMono?: boolean }) => (
+      <div className={`p-3 border-r border-b border-black last:border-r-0 flex flex-col justify-start ${inverted ? "bg-black text-white" : "bg-white text-black"} ${className}`}>
+         <label className={`block text-[9px] uppercase font-bold mb-1 tracking-widest leading-none ${inverted ? "text-gray-400" : "text-gray-600"}`}>
+            {label}
+         </label>
+         <div className={`text-sm font-bold uppercase leading-tight whitespace-pre-wrap break-words ${fontMono ? "font-mono" : ""}`}>
+            {value || "-"}
+         </div>
       </div>
-    </div>
-  );
+   );
 
-  return (
-    <Wrapper data-testid="packing-list-template">
-      <div className="max-w-[210mm] mx-auto bg-white text-black p-8 font-sans antialiased box-border">
-        
-        {/* Main Document Border */}
-        <div className="border-2 border-black">
-          
-          {/* Header */}
-          <div className="flex border-b border-black">
-             <div className="w-1/2 p-4 border-r border-black">
-                <Label>Seller / Exporter</Label>
-                <div className="text-sm font-bold mt-1">{display(sellerName)}</div>
-                <div className="text-xs mt-1 whitespace-pre-wrap">{display(sellerAddress)}</div>
-                {sellerContact && (
-                   <div className="text-[10px] mt-2 text-gray-500">
-                      Attn: {sellerContact.name} {sellerContact.phone && `(${sellerContact.phone})`}
-                   </div>
-                )}
-             </div>
-             <div className="w-1/2 p-4 bg-gray-50 flex flex-col justify-between">
-                <div className="flex justify-between items-start">
-                   <div>
-                      <h1 className="text-3xl font-bold uppercase tracking-tight">Packing List</h1>
-                   </div>
-                   <div className="text-right">
-                      <Label>Packing List No.</Label>
-                      <div className="text-lg font-mono font-bold">{display(packingListNumber)}</div>
-                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                   <Field label="Date" value={formatDate(dateOfIssue)} />
-                   <Field label="Invoice Ref" value={invoiceReferenceNumber} />
-                   <Field label="Buyer Order No" value={buyerOrderNumber} />
-                   <Field label="PO Number" value={poNumber} />
-                </div>
-             </div>
-          </div>
+   return (
+      <Wrapper>
+         <div className="max-w-4xl mx-auto bg-white font-sans text-black border-2 border-black my-10 relative overflow-hidden">
+            
+            {/* --- Header Section --- */}
+            <div className="flex justify-between items-start border-b-4 border-black p-8 mb-0">
+               <div className="flex-1">
+                  <h1 className="text-4xl font-black uppercase tracking-tighter leading-none mb-2">
+                     Packing List
+                  </h1>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] border border-black px-2 py-1 inline-block">
+                     Detailed Cargo Inventory
+                  </p>
+               </div>
+               <div className="text-right">
+                  <p className="text-[9px] font-bold uppercase tracking-widest mb-1">Issue Date</p>
+                  <p className="text-xl font-mono font-black tracking-widest bg-black text-white px-3 py-1">
+                     {issueDate || "DRAFT"}
+                  </p>
+               </div>
+            </div>
 
-          {/* Buyer Details */}
-          <div className="flex border-b border-black">
-             <div className="w-1/2 p-4 border-r border-black">
-                <Label>Bill To (Buyer)</Label>
-                <div className="text-sm font-bold mt-1">{display(buyerName)}</div>
-                <div className="text-xs mt-1 whitespace-pre-wrap">{display(billToAddress)}</div>
-             </div>
-             <div className="w-1/2 p-4">
-                <Label>Ship To (Delivery Address)</Label>
-                {/* Often same as Bill To, but specific field provided */}
-                <div className="text-xs mt-1 whitespace-pre-wrap">{display(shipToAddress || billToAddress)}</div>
-                {buyerContact && (
-                   <div className="text-[10px] mt-2 text-gray-500">
-                      Contact: {buyerContact.name} / {buyerContact.phone}
-                   </div>
-                )}
-             </div>
-          </div>
+            {/* --- Parties Grid --- */}
+            <div className="grid grid-cols-2 border-b-2 border-black">
+               
+               {/* Left Column: Seller & Consignee */}
+               <div className="border-r border-black flex flex-col">
+                  {/* Seller / Exporter */}
+                  <div className="p-4 border-b border-black flex-1">
+                     <div className="flex items-center space-x-2 mb-3">
+                        <div className="w-3 h-3 bg-black"></div>
+                        <h3 className="text-xs font-black uppercase tracking-widest">Seller / Exporter</h3>
+                     </div>
+                     <div className="text-sm font-bold uppercase mb-1">{sellerName}</div>
+                     <div className="text-xs mb-2 leading-relaxed">
+                        {sellerAddress}<br/>
+                        {sellerCity}, {sellerCountry}
+                     </div>
+                     {sellerEmail && <div className="text-[10px] font-mono text-gray-700 mt-2">Email: {sellerEmail}</div>}
+                  </div>
+                  
+                  {/* Consignee */}
+                  <div className="p-4 flex-1">
+                     <div className="flex items-center space-x-2 mb-3">
+                        <div className="w-3 h-3 border-2 border-black"></div>
+                        <h3 className="text-xs font-black uppercase tracking-widest">Consignee</h3>
+                     </div>
+                     <div className="text-sm font-bold uppercase mb-1">{consigneeName}</div>
+                     <div className="text-xs mb-2 leading-relaxed">
+                        {consigneeAddress}<br/>
+                        {consigneeCity}, {consigneeCountry}
+                     </div>
+                     {consigneeEmail && <div className="text-[10px] font-mono text-gray-700 mt-2">Email: {consigneeEmail}</div>}
+                  </div>
+               </div>
 
-          {/* Transport Details */}
-          <div className="flex border-b border-black divide-x divide-black bg-gray-100">
-             <div className="w-1/4 p-2"><Field label="Mode" value={modeOfTransport} /></div>
-             <div className="w-1/4 p-2"><Field label="Vessel / Flight" value={vesselFlightName} /></div>
-             <div className="w-1/4 p-2"><Field label="Port of Loading" value={portOfLoading} /></div>
-             <div className="w-1/4 p-2"><Field label="Final Destination" value={portOfDischarge} /></div>
-          </div>
-          {billOfLadingNumber && (
-             <div className="border-b border-black p-2 bg-gray-100">
-                <Field label="Bill of Lading / Waybill Number" value={billOfLadingNumber} />
-             </div>
-          )}
+               {/* Right Column: Buyer & Transport */}
+               <div className="flex flex-col">
+                  {/* Buyer */}
+                  <div className="p-4 border-b border-black bg-gray-50 flex-1">
+                     <div className="flex items-center space-x-2 mb-3">
+                        <div className="w-3 h-3 bg-gray-400"></div>
+                        <h3 className="text-xs font-black uppercase tracking-widest">Buyer</h3>
+                     </div>
+                     <div className="text-sm font-bold uppercase mb-1">{buyerName || "SAME AS CONSIGNEE"}</div>
+                     <div className="text-xs mb-2 leading-relaxed">
+                        {buyerAddress}<br/>
+                        {buyerCity ? `${buyerCity}, ` : ""}{buyerCountry}
+                     </div>
+                     {buyerEmail && <div className="text-[10px] font-mono text-gray-700 mt-2">Email: {buyerEmail}</div>}
+                  </div>
 
-          {/* Table Headers */}
-          <div className="flex border-b border-black bg-gray-200 text-xs">
-             <div className="w-1/5 p-2 border-r border-black font-bold uppercase text-[10px]">Marks & Numbers</div>
-             <div className="w-1/6 p-2 border-r border-black font-bold uppercase text-[10px]">Qty & Packages</div>
-             <div className="w-5/12 p-2 border-r border-black font-bold uppercase text-[10px]">Description of Goods</div>
-             <div className="w-1/12 p-2 border-r border-black font-bold uppercase text-[10px] text-right">Net Wt</div>
-             <div className="w-1/12 p-2 text-right font-bold uppercase text-[10px]">Gr Wt</div>
-          </div>
+                  {/* Transport Routing */}
+                  <div className="grid grid-cols-2 flex-1">
+                     <DataBox label="Vessel / Transport Means" value={transportMeansIdentifier} className="border-b-0" />
+                     <DataBox label="Voyage / Flight No." value={conveyanceReferenceNumber} fontMono className="border-b-0 border-r-0" />
+                     <DataBox label="Vehicle Reg No." value={vehicleRegistrationNumber} fontMono className="border-b-0 border-t border-black" />
+                     <DataBox label="Place of Delivery" value={deliveryLocationName} className="border-b-0 border-r-0 border-t border-black bg-gray-50" />
+                  </div>
+               </div>
+            </div>
 
-          {/* The Content: Nested Mapping (Container -> Package -> Goods) */}
-          <div className="min-h-[400px]">
-             {containers.length > 0 ? (
-                containers.map((container, cIdx) => (
-                   <div key={cIdx} className="border-b border-black last:border-0">
-                      
-                      {/* Container Header Bar */}
-                      {container.containerNumber && (
-                         <div className="bg-gray-50 p-1 px-2 border-b border-gray-300 flex gap-4 text-[10px] font-mono font-bold text-gray-700">
-                            <span>CNTR: {container.containerNumber}</span>
-                            <span>SEAL: {container.sealNumber || "-"}</span>
-                            <span>TYPE: {container.containerType || "-"}</span>
-                         </div>
-                      )}
+            {/* --- Delivery Address Extension --- */}
+            {deliveryLocationAddress && (
+               <div className="border-b-2 border-black bg-gray-100 p-3">
+                  <label className="block text-[9px] uppercase font-bold text-gray-500 mb-1 tracking-widest">Delivery Address</label>
+                  <div className="text-xs font-bold uppercase">{deliveryLocationAddress}</div>
+               </div>
+            )}
 
-                      {/* Packages Loop */}
-                      {container.packages && container.packages.map((pkg, pIdx) => (
-                         <div key={pIdx} className="flex text-xs border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                            {/* Marks */}
-                            <div className="w-1/5 p-2 border-r border-black break-words font-mono text-[10px]">
-                               {display(pkg.marksAndNumbers)}
-                            </div>
+            {/* --- Goods Details Table --- */}
+            <div className="border-b-2 border-black min-h-[250px] flex flex-col">
+               <div className="bg-black text-white p-2 text-[9px] font-black uppercase tracking-widest border-b border-black">
+                  Cargo Inventory Details
+               </div>
+               <table className="w-full text-left table-fixed flex-1">
+                  <thead className="bg-white text-[9px] font-bold uppercase tracking-widest text-gray-600 border-b border-black">
+                     <tr>
+                        <th className="p-3 w-16 text-center border-r border-black">Item</th>
+                        <th className="p-3 w-7/12 border-r border-black">Description of Goods</th>
+                        <th className="p-3 w-2/12 text-center border-r border-black">Packaging</th>
+                        <th className="p-3 w-2/12 text-center">Quantity</th>
+                     </tr>
+                  </thead>
+                  <tbody className="text-sm font-mono">
+                     {goods.length > 0 ? goods.map((item, i) => (
+                        <tr key={i} className="border-b border-gray-200 last:border-0 align-top">
+                           <td className="p-3 text-center border-r border-black font-bold text-gray-400">{i + 1}</td>
+                           <td className="p-3 border-r border-black whitespace-pre-wrap leading-relaxed uppercase font-sans font-bold text-xs">
+                              {item.description}
+                           </td>
+                           <td className="p-3 text-center border-r border-black text-[10px] uppercase font-sans font-bold text-gray-600">
+                              {item.typeOfPackaging || "PKG"}
+                           </td>
+                           <td className="p-3 text-center font-black text-base">
+                              {item.numberOfPackages}
+                           </td>
+                        </tr>
+                     )) : (
+                        <tr>
+                           <td colSpan={4} className="p-8 text-center text-gray-400 italic uppercase font-sans text-xs">No goods items declared</td>
+                        </tr>
+                     )}
+                  </tbody>
+                  {/* Totals Footer */}
+                  {goods.length > 0 && (
+                     <tfoot className="bg-gray-100 border-t border-black font-bold">
+                        <tr>
+                           <td colSpan={3} className="p-3 text-right text-[10px] uppercase tracking-widest border-r border-black">Total Packages</td>
+                           <td className="p-3 text-center text-lg font-black">
+                              {goods.reduce((acc, curr) => acc + (curr.numberOfPackages || 0), 0)}
+                           </td>
+                        </tr>
+                     </tfoot>
+                  )}
+               </table>
+            </div>
 
-                            {/* Qty & Pkg Type */}
-                            <div className="w-1/6 p-2 border-r border-black">
-                               <div className="font-bold">{pkg.numberOfPackages}</div>
-                               <div className="uppercase text-[10px]">{pkg.packageType}</div>
-                               {pkg.dimensions && (
-                                  <div className="mt-2 text-[9px] text-gray-500">
-                                     {pkg.dimensions.length}x{pkg.dimensions.width}x{pkg.dimensions.height} {pkg.dimensions.unit}
-                                  </div>
-                               )}
-                            </div>
+            {/* --- Summary Weights & Dimensions --- */}
+            <div className="grid grid-cols-2 border-b-2 border-black">
+               <DataBox label="Total Net Weight" value={netWeight != null ? `${netWeight}` : "N/A"} fontMono />
+               <DataBox label="Total Volume" value={volume != null ? `${volume}` : "N/A"} fontMono className="border-r-0" />
+            </div>
 
-                            {/* Goods Loop (Inside Description Column) */}
-                            <div className="w-5/12 border-r border-black">
-                               {pkg.goods && pkg.goods.map((item, gIdx) => (
-                                  <div key={gIdx} className="p-2 border-b border-gray-100 last:border-0">
-                                     <div className="font-bold uppercase text-sm">{display(item.productDescription)}</div>
-                                     <div className="flex gap-4 mt-1 text-[10px] text-gray-600">
-                                        {item.sku && <span>SKU: {item.sku}</span>}
-                                        {item.partNumber && <span>PN: {item.partNumber}</span>}
-                                     </div>
-                                     <div className="mt-1 font-mono text-xs">
-                                        Qty: {item.quantityInPackage} {item.unitOfMeasure}
-                                     </div>
-                                  </div>
-                               ))}
-                            </div>
-
-                            {/* Weights */}
-                            <div className="w-1/12 p-2 border-r border-black text-right font-mono">
-                               {formatWeight(pkg.packageNetWeight)}
-                            </div>
-                            <div className="w-1/12 p-2 text-right font-mono">
-                               {formatWeight(pkg.packageGrossWeight)}
-                            </div>
-                         </div>
-                      ))}
-                   </div>
-                ))
-             ) : (
-                <div className="p-8 text-center text-gray-400 italic">No packing details available</div>
-             )}
-          </div>
-
-          {/* Totals Footer */}
-          <div className="border-t-2 border-black flex justify-end bg-gray-50 p-4">
-             <div className="w-1/2 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-                
-                <div className="text-right text-gray-600">Total Packages:</div>
-                <div className="text-right font-bold">{display(totalPackages)}</div>
-
-                <div className="text-right text-gray-600">Total Quantity:</div>
-                <div className="text-right font-bold">{display(totalQuantity)}</div>
-
-                <div className="col-span-2 border-t border-gray-300 my-1"></div>
-
-                <div className="text-right text-gray-600">Total Net Weight:</div>
-                <div className="text-right font-bold font-mono">{formatWeight(totalNetWeight)}</div>
-
-                <div className="text-right text-gray-600">Total Gross Weight:</div>
-                <div className="text-right font-bold font-mono text-base">{formatWeight(totalGrossWeight)}</div>
-
-                <div className="text-right text-gray-600">Total Volume:</div>
-                <div className="text-right font-bold font-mono">
-                   {totalVolume?.value ? `${totalVolume.value} ${totalVolume.unit}` : "-"}
-                </div>
-             </div>
-          </div>
-          
-          {/* Signatures */}
-          <div className="flex border-t border-black p-6 mt-0">
-             <div className="w-1/2">
-                 <Label>Remarks</Label>
-                 <p className="text-[10px] text-gray-500 italic max-w-xs mt-1">
-                    All goods listed herein are packed in good order and condition. 
-                    Please verify contents immediately upon receipt.
-                 </p>
-             </div>
-             <div className="w-1/2 text-right">
-                 <Label>Authorized Signature</Label>
-                 <div className="h-16 border-b border-black mb-2"></div>
-                 <div className="text-xs font-bold uppercase">{display(sellerName)}</div>
-             </div>
-          </div>
-
-        </div>
-      </div>
-    </Wrapper>
-  );
+         </div>
+      </Wrapper>
+   );
 };
