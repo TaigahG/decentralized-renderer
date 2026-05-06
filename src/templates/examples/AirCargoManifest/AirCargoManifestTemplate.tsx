@@ -2,223 +2,165 @@ import { TemplateProps } from "@tradetrust-tt/decentralized-renderer-react-compo
 import React, { FunctionComponent } from "react";
 import { Wrapper } from "../../../core/Wrapper";
 import { getDocumentData } from "../../../utils";
-import { AirCargoManifest, AirCargoManifestSchema, Measurement, ManifestAWBItem } from "./types";
+import { AirCargoManifest, AirCargoManifestSchema } from "./types";
 
 export const AirCargoManifestTemplate: FunctionComponent<
-  TemplateProps<AirCargoManifestSchema>
+   TemplateProps<AirCargoManifestSchema>
 > = ({ document }) => {
-  const data = getDocumentData(document) as AirCargoManifest;
+   const data = getDocumentData(document) as AirCargoManifest;
 
-  const {
-    airlinePrefix,
-    flightNumber,
-    dateOfFlight,
-    aircraftRegistration,
-    ownerOperator,
-    pointOfLoading,
-    pointOfUnloading,
-    awbList = [],
-  } = data;
+   const {
+      // --- Parties ---
+      carrier: {
+         name: carrierName,
+         addressLine: carrierAddress,
+         city: carrierCity,
+         country: carrierCountry,
+         email: carrierEmail,
+      } = {},
+      transportEquipmentOperator: {
+         name: operatorName,
+         addressLine: operatorAddress,
+         city: operatorCity,
+         country: operatorCountry,
+         email: operatorEmail,
+      } = {},
 
-  // --- Helpers ---
-  const display = (value: any) => (value ? String(value) : "");
-  
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "";
-    try {
-      return new Date(dateStr).toISOString().split("T")[0];
-    } catch (e) {
-      return dateStr;
-    }
-  };
+      // --- Locations & Routing ---
+      originalLoadingLocation,
+      placeOrDeparture,
+      arrivalLocation, // e.g., Destination Airport (JFK, LHR)
 
-  const formatWeight = (m?: Measurement) => 
-    m?.value ? `${m.value.toFixed(1)} ${m.unit || "kg"}` : "-";
+      // --- Goods Details ---
+      goods = [],
 
-  const Label = ({ children }: { children: React.ReactNode }) => (
-    <div className="text-[9px] uppercase font-bold text-gray-500 mb-0.5 tracking-wider leading-none">
-      {children}
-    </div>
-  );
+      // --- Transport Details ---
+      conveyanceReferenceNumber: flightNumber, // Aliased for standard air freight context
+      vehicleRegistrationNumber: tailNumber,   // Aliased to the aircraft's registration
+   } = data;
 
-  // Group items by ULD if ULD is present, otherwise put them in "Bulk"
-  const uldGroups: Record<string, ManifestAWBItem[]> = {};
-  const bulkItems: ManifestAWBItem[] = [];
-
-  awbList.forEach(item => {
-    if (item.uldNumber) {
-      if (!uldGroups[item.uldNumber]) uldGroups[item.uldNumber] = [];
-      uldGroups[item.uldNumber].push(item);
-    } else {
-      bulkItems.push(item);
-    }
-  });
-
-  // Calculate Totals
-  const totalPieces = awbList.reduce((acc, item) => acc + (item.numberOfPieces || 0), 0);
-  const totalWeight = awbList.reduce((acc, item) => acc + (item.weight?.value || 0), 0);
-
-  return (
-    <Wrapper data-testid="air-cargo-manifest-template">
-      <div className="max-w-[210mm] mx-auto bg-white text-black p-8 font-sans antialiased box-border">
-        
-        {/* Main Document Border */}
-        <div className="border-2 border-black">
-          
-          {/* Header Section */}
-          <div className="flex border-b border-black">
-             <div className="w-2/3 p-4">
-                <h1 className="text-2xl font-bold uppercase tracking-tight mb-2">Air Cargo Manifest</h1>
-                <div className="text-xs font-bold uppercase text-gray-600">{display(ownerOperator)}</div>
-             </div>
-             <div className="w-1/3 p-4 border-l border-black bg-gray-50 text-right">
-                <Label>Manifest Reference</Label>
-                <div className="text-xl font-mono font-bold">
-                   {display(airlinePrefix)}{display(flightNumber)} / {formatDate(dateOfFlight).replace(/-/g, '')}
-                </div>
-             </div>
-          </div>
-
-          {/* Flight Details Grid */}
-          <div className="grid grid-cols-4 gap-4 p-4 border-b border-black text-xs">
-             <div>
-                <Label>Flight No.</Label>
-                <div className="font-bold text-sm">{display(airlinePrefix)} {display(flightNumber)}</div>
-             </div>
-             <div>
-                <Label>Date</Label>
-                <div className="font-bold text-sm">{formatDate(dateOfFlight)}</div>
-             </div>
-             <div>
-                <Label>Registration</Label>
-                <div className="font-bold">{display(aircraftRegistration)}</div>
-             </div>
-             <div>
-                <Label>Operator</Label>
-                <div className="font-bold">{display(ownerOperator)}</div>
-             </div>
-          </div>
-
-          {/* Routing Strip */}
-          <div className="flex border-b border-black divide-x divide-black bg-black text-white">
-             <div className="w-1/2 p-2 flex justify-between items-center">
-                <span className="text-[10px] font-bold uppercase opacity-70">Point of Loading</span>
-                <span className="text-lg font-bold font-mono">{display(pointOfLoading)}</span>
-             </div>
-             <div className="w-1/2 p-2 flex justify-between items-center">
-                <span className="text-[10px] font-bold uppercase opacity-70">Point of Unloading</span>
-                <span className="text-lg font-bold font-mono">{display(pointOfUnloading)}</span>
-             </div>
-          </div>
-
-          {/* Cargo Table */}
-          <table className="w-full border-collapse text-[10px]">
-             <thead>
-                <tr className="bg-gray-100 text-[9px] font-bold uppercase text-center border-b border-black">
-                   <th className="py-2 px-2 w-[18%] text-left">AWB Number</th>
-                   <th className="py-2 px-2 w-[8%]">Pieces</th>
-                   <th className="py-2 px-2 w-[12%]">Weight</th>
-                   <th className="py-2 px-2 w-[27%] text-left">Nature of Goods</th>
-                   <th className="py-2 px-2 w-[18%]">Handling Codes</th>
-                   <th className="py-2 px-2 w-[17%]">ULD / Bulk</th>
-                </tr>
-             </thead>
-             <tbody>
-                {/* ULD Cargo Sections */}
-                {Object.keys(uldGroups).map((uld) => (
-                   <React.Fragment key={uld}>
-                      {uldGroups[uld].map((item, idx) => (
-                         <tr key={idx} className="border-b border-gray-200">
-                            <td className="py-2 px-2 font-mono">{display(item.mawbNumber)}</td>
-                            <td className="py-2 px-2 text-center">{display(item.numberOfPieces)}</td>
-                            <td className="py-2 px-2 text-center font-mono">{formatWeight(item.weight)}</td>
-                            <td className="py-2 px-2 uppercase">{display(item.natureOfGoods)}</td>
-                            <td className="py-2 px-2 text-center font-bold">
-                               {item.specialHandlingCodes?.join(", ")}
-                            </td>
-                            <td className="py-2 px-2 text-center font-mono">{uld}</td>
-                         </tr>
-                      ))}
-                   </React.Fragment>
-                ))}
-
-                {/* Bulk Cargo Section */}
-                {bulkItems.length > 0 && (
-                   <React.Fragment>
-                      {bulkItems.map((item, idx) => (
-                         <tr key={idx} className="border-b border-gray-200">
-                            <td className="py-2 px-2 font-mono">{display(item.mawbNumber)}</td>
-                            <td className="py-2 px-2 text-center">{display(item.numberOfPieces)}</td>
-                            <td className="py-2 px-2 text-center font-mono">{formatWeight(item.weight)}</td>
-                            <td className="py-2 px-2 uppercase">{display(item.natureOfGoods)}</td>
-                            <td className="py-2 px-2 text-center font-bold">
-                               {item.specialHandlingCodes?.join(", ")}
-                            </td>
-                            <td className="py-2 px-2 text-center">BULK</td>
-                         </tr>
-                      ))}
-                   </React.Fragment>
-                )}
-
-                {/* Empty state */}
-                {awbList.length === 0 && (
-                   <tr>
-                      <td colSpan={6} className="p-12 text-center text-gray-400 italic">
-                         No cargo manifest details available
-                      </td>
-                   </tr>
-                )}
-
-                {/* Spacer row for minimum height */}
-                {awbList.length > 0 && awbList.length < 8 && (
-                   <tr>
-                      <td colSpan={6} className="h-[200px]"></td>
-                   </tr>
-                )}
-             </tbody>
-             <tfoot>
-                <tr className="bg-black text-white text-xs font-bold uppercase">
-                   <td className="py-2 px-2 text-right">Total:</td>
-                   <td className="py-2 px-2 text-center">{totalPieces} PCS</td>
-                   <td className="py-2 px-2 text-center">{totalWeight.toFixed(1)} KG</td>
-                   <td colSpan={3}></td>
-                </tr>
-             </tfoot>
-          </table>
-
-          {/* Captain's Declaration */}
-          <div className="p-6 pt-8 pb-8">
-             <div className="flex gap-12 items-start">
-                {/* Declaration Text */}
-                <div className="flex-1 text-[10px] leading-relaxed text-gray-600">
-                   <p className="mb-3">
-                      <span className="text-red-600 font-bold">DECLARATION:</span> I hereby certify that the information contained in this manifest regarding the above flight is true and correct to the best of my knowledge.
-                   </p>
-                   <p>
-                      All Dangerous Goods and Special Cargo have been inspected and loaded in accordance with IATA Regulations.
-                   </p>
-                </div>
-
-                {/* Signature Area */}
-                <div className="w-[280px] flex-shrink-0 text-right">
-                   <Label>Signature of Pilot in Command / Station Manager</Label>
-                   <div className="h-16 border-b border-black mt-2 mb-2"></div>
-                   <div className="text-[10px] italic text-gray-500">
-                      Executed at {display(pointOfLoading)}, {formatDate(dateOfFlight)}
-                   </div>
-                </div>
-             </div>
-          </div>
-
-        </div>
-        
-        {/* Document Footer */}
-        <div className="mt-2 flex justify-between text-[8px] text-gray-400 font-bold uppercase">
-           <div>IATA Standard Cargo Manifest</div>
-           <div>Page 1 of 1</div>
-        </div>
-
+   // Strict B&W Box Helper
+   const DataBox = ({ label, value, className = "", inverted = false, fontMono = false }: { label: string; value?: string | React.ReactNode; className?: string; inverted?: boolean; fontMono?: boolean }) => (
+      <div className={`p-3 border-r border-b border-black last:border-r-0 flex flex-col justify-start ${inverted ? "bg-black text-white" : "bg-white text-black"} ${className}`}>
+         <label className={`block text-[9px] uppercase font-bold mb-1 tracking-widest leading-none ${inverted ? "text-gray-400" : "text-gray-600"}`}>
+            {label}
+         </label>
+         <div className={`text-sm font-bold uppercase leading-tight whitespace-pre-wrap break-words ${fontMono ? "font-mono" : ""}`}>
+            {value || "-"}
+         </div>
       </div>
-    </Wrapper>
-  );
+   );
+
+   return (
+      <Wrapper>
+         <div className="max-w-4xl mx-auto bg-white font-sans text-black border-2 border-black my-10 relative overflow-hidden">
+            
+            {/* --- Header Section --- */}
+            <div className="flex justify-between items-start border-b-4 border-black p-6 mb-0">
+               <div className="flex-1">
+                  <h1 className="text-4xl font-black uppercase tracking-tighter leading-none mb-2">
+                     Air Cargo Manifest
+                  </h1>
+                  <div className="inline-block bg-black text-white px-3 py-1">
+                     <span className="text-[11px] font-black uppercase tracking-[0.2em]">
+                        Flight & Customs Declaration
+                     </span>
+                  </div>
+               </div>
+               <div className="text-right">
+                  <p className="text-[9px] font-bold uppercase tracking-widest mb-1 text-gray-500">Flight Number</p>
+                  <p className="text-2xl font-mono font-black tracking-widest border-2 border-black px-3 py-1">
+                     {flightNumber || "PENDING"}
+                  </p>
+               </div>
+            </div>
+
+            {/* --- Flight & Aircraft Routing --- */}
+            <div className="grid grid-cols-4 border-b-2 border-black bg-gray-100">
+               <DataBox label="Flight / Voyage Number" value={flightNumber} fontMono className="col-span-2" />
+               <DataBox label="Aircraft Registration (Tail No.)" value={tailNumber} fontMono className="col-span-2 border-r-0" />
+            </div>
+            <div className="grid grid-cols-3 border-b-2 border-black">
+               <DataBox label="Original Loading Location" value={originalLoadingLocation} />
+               <DataBox label="Airport of Departure" value={placeOrDeparture} />
+               <DataBox label="Airport of Destination" value={arrivalLocation} className="border-r-0" />
+            </div>
+
+            {/* --- Parties Grid --- */}
+            <div className="grid grid-cols-2 border-b-2 border-black">
+               
+               {/* Carrier (Airline) */}
+               <div className="p-4 border-r border-black flex flex-col bg-white">
+                  <div className="flex items-center space-x-2 mb-3">
+                     <div className="w-3 h-3 bg-black"></div>
+                     <h3 className="text-[10px] font-black uppercase tracking-widest">Operating Carrier (Airline)</h3>
+                  </div>
+                  <div className="text-lg font-black uppercase mb-1 tracking-wider">{carrierName}</div>
+                  <div className="text-xs mb-2 leading-relaxed">
+                     {carrierAddress}<br/>
+                     {carrierCity}, {carrierCountry}
+                  </div>
+                  {carrierEmail && <div className="text-[10px] font-mono text-gray-700 mt-2">Email: {carrierEmail}</div>}
+               </div>
+               
+               {/* Transport Equipment Operator (Ground Handler) */}
+               <div className="p-4 flex flex-col bg-gray-50">
+                  <div className="flex items-center space-x-2 mb-3">
+                     <div className="w-3 h-3 border-2 border-black"></div>
+                     <h3 className="text-[10px] font-black uppercase tracking-widest">Transport Equipment Operator / Handling Agent</h3>
+                  </div>
+                  <div className="text-sm font-bold uppercase mb-1">{operatorName || "SAME AS CARRIER"}</div>
+                  {operatorAddress && (
+                     <div className="text-xs mb-2 leading-relaxed">
+                        {operatorAddress}<br/>
+                        {operatorCity}, {operatorCountry}
+                     </div>
+                  )}
+                  {operatorEmail && <div className="text-[10px] font-mono text-gray-700 mt-2">Email: {operatorEmail}</div>}
+               </div>
+            </div>
+
+            {/* --- Goods Details Table --- */}
+            <div className="border-b-2 border-black min-h-[300px] flex flex-col relative">
+               {/* Background Watermark */}
+               <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none overflow-hidden">
+                  <span className="text-[8rem] font-black uppercase text-center leading-none transform -rotate-12 whitespace-nowrap">
+                     MANIFEST
+                  </span>
+               </div>
+
+               <div className="bg-white text-black p-2 text-[9px] font-black uppercase tracking-widest border-b border-black z-10 flex items-center">
+                  <span className="bg-black text-white px-2 py-0.5 mr-2">Flight Cargo Summary</span>
+                  As declared for Customs and Security
+               </div>
+               <table className="w-full text-left table-fixed flex-1 z-10 relative">
+                  <thead className="bg-gray-100 text-[9px] font-bold uppercase tracking-widest text-gray-600 border-b border-black">
+                     <tr>
+                        <th className="p-3 w-1/12 text-center border-r border-black">Item</th>
+                        <th className="p-3 w-4/12 border-r border-black">Description of Goods</th>
+                        <th className="p-3 w-7/12">Consignment Summary</th>
+                     </tr>
+                  </thead>
+                  <tbody className="text-sm font-mono">
+                     {goods.length > 0 ? goods.map((item, i) => (
+                        <tr key={i} className="border-b border-gray-200 last:border-0 align-top">
+                           <td className="p-3 text-center border-r border-black font-bold text-gray-400">{i + 1}</td>
+                           <td className="p-3 border-r border-black whitespace-pre-wrap leading-relaxed font-sans font-bold text-xs uppercase">
+                              {item.description || "CONSOLIDATED CARGO"}
+                           </td>
+                           <td className="p-3 whitespace-pre-wrap leading-relaxed uppercase font-sans font-bold text-xs">
+                              {item.consignmentSummaryDescription || "-"}
+                           </td>
+                        </tr>
+                     )) : (
+                        <tr>
+                           <td colSpan={3} className="p-8 text-center text-gray-400 italic uppercase font-sans text-xs">No cargo summaries declared on this flight</td>
+                        </tr>
+                     )}
+                  </tbody>
+               </table>
+            </div>
+         </div>
+      </Wrapper>
+   );
 };

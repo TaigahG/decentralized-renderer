@@ -1,97 +1,61 @@
 import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
+/**
+ * Represents a Rail Consignment Note (often referred to as a CIM Consignment Note).
+ * A transport document used in international rail freight that serves as proof 
+ * of the contract of carriage between the shipper and the rail carrier.
+ */
 export interface RailConsignmentNote {
-  "@context"?: string | object;
-  "@id"?: string;
-  "@type"?: string;
-
-  // --- Header Information ---
-  consignmentNoteNumber?: string;
-  contractType?: string; // e.g., "CIM", "SMGS", "CIM/SMGS"
-  
-  /** Date format: ISO 8601 DateTime (YYYY-MM-DDThh:mm:ss) */
-  destinationStationDateStamp?: string;
-
   // --- Parties ---
-  consignor?: RailParty;
   consignee?: RailParty;
-  railwayUndertaking?: RailwayUndertaking;
+  consignor?: RailParty;
 
-  // --- Route & Transport ---
-  departureStation?: string;
-  destinationStation?: string;
-  wagonNumber?: string;
-  
-  /** List of border crossing points */
-  borderCrossings?: BorderCrossing[]; // Mapped from @set container
+  // --- Routing ---
+  nameOfTheDestinationStation?: string;
 
   // --- Goods Details ---
-  /** List of goods items loaded on the wagon */
-  goodsDetails?: RailGoodsDetail[]; // Mapped from @set container
+  /** List of standard goods covered under this rail consignment note */
+  goods?: RailGoodsItem[]; // Mapped from @set container
 
-  // --- Payment / Franking ---
-  frankingInstructions?: FrankingInstructions;
+  /** List of dangerous/hazardous goods covered under this rail consignment note */
+  dangerousGoods?: RailDangerousGoodsItem[]; // Mapped from @set container
 
-  // --- Metadata ---
-  digitalSignature?: string;
-  documentHash?: string;
-  links?: string | string[];
+  // --- Transport & Equipment ---
+  transportMeansIdentifier?: string; // e.g., Train number
+  vehicleRegistrationNumber?: string; // e.g., Railcar/wagon registration number
+  transportEquipmentIdentifier?: string; // e.g., Container number if intermodal
 }
 
 // --- Sub-Interfaces ---
 
 /**
- * Standard party definition for Rail Consignment Note.
+ * Base representation of a party in the Rail Consignment Note.
+ * Shared across Consignee and Consignor.
  */
 export interface RailParty {
   name?: string;
-  address?: string;
-  countryCode?: string;
-}
-
-export interface RailwayUndertaking {
-  carrierName?: string;
-  carrierCode?: string; // e.g., RICS code
-}
-
-export interface BorderCrossing {
-  stationCode?: string;
-  stationName?: string;
-  crossingType?: string; // e.g., "Transit", "Entry", "Exit"
-}
-
-export interface RailGoodsDetail {
-  descriptionOfGoods?: string;
-  nhmCode?: string; // Harmonized Commodity Code (Rail specific)
-  hsCode?: string; // Harmonized System Code
-  
-  mass?: Measurement;
-  
-  isDangerous?: boolean;
-  ridDangerousGoods?: RIDDangerousGoods;
+  addressLine?: string;
+  city?: string;
+  country?: string;
+  email?: string;
 }
 
 /**
- * Regulations concerning the International Carriage of Dangerous Goods by Rail (RID).
+ * Represents a standard goods line item.
  */
-export interface RIDDangerousGoods {
-  unNumber?: string;
-  ridClass?: string;
-  packingGroup?: string;
-  properShippingName?: string;
+export interface RailGoodsItem {
+  description?: string;
+  numberOfPackages?: number;
 }
 
-export interface Measurement {
-  value?: number;
-  unit?: string;
-}
-
-export interface FrankingInstructions {
-  paymentTerms?: string; // e.g., "Paid", "To Collect"
-  paidToStation?: string;
-  senderPaysUntil?: string; // Station code or name
-  receiverPaysFrom?: string; // Station code or name
+/**
+ * Represents a dangerous goods line item, which requires explicit hazard classification.
+ */
+export interface RailDangerousGoodsItem {
+  description?: string;
+  numberOfPackages?: number;
+  classNumber?: string; // e.g., UN Hazard Class (like "3" for Flammable Liquids)
 }
 
 export type RailConsignmentNoteW3C = SignedVerifiableCredential & {

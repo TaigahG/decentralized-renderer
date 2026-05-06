@@ -1,53 +1,64 @@
 import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
+/**
+ * Represents a Sea Cargo Manifest.
+ * A comprehensive document summarizing all bills of lading that have been issued by a carrier 
+ * or its representative for a particular voyage, used primarily for customs declarations.
+ */
 export interface SeaCargoManifest {
-  "@context"?: string | object;
-  "@id"?: string;
-  "@type"?: string;
+  // --- Document Identifiers ---
+  documentId?: string;
+  shipmentId?: string;
+  billOfLadingNumber?: string;
 
-  // --- Vessel & Voyage Information ---
-  nameOfShip?: string;
-  imoNumber?: string;
-  voyageNumber?: string;
-  flagState?: string;
-  callSign?: string;
+  // --- Parties ---
+  consignee?: SeaCargoManifestParty;
+  notifyParty?: SeaCargoManifestParty;
+  consignor?: SeaCargoManifestParty;
 
-  // --- Port & Schedule ---
-  portOfLoading?: string;
-  portOfDischarge?: string;
-  
-  /** Date format: YYYY-MM-DD */
-  dateOfArrival?: string;
-  /** Date format: YYYY-MM-DD */
-  dateOfDeparture?: string;
+  // --- Locations ---
+  placeOfTheDeliveryOfTheGoods?: string;
+  originalLoadingLocation?: string;
+  baseportUnloadingLocation?: string;
 
-  // --- Cargo Details ---
-  /** List of individual Bill of Lading items on the manifest */
-  manifestItems?: ManifestItem[]; // Mapped from @set container
+  // --- Weights & Measures ---
+  grossWeight?: number;
+  grossWeightUnit?: string; // e.g., "KGM", "LBS"
+  transportMeansGrossWeight?: number;
+  transportMeansGrossWeightUnit?: string;
 
-  // --- Metadata ---
-  digitalSignature?: string;
-  documentHash?: string;
-  links?: string | string[];
+  // --- Goods Details ---
+  /** List of consolidated goods summaries covered under this manifest */
+  goods?: SeaCargoManifestGoodsItem[]; // Mapped from @set container
+
+  // --- Transport & Equipment ---
+  conveyanceReferenceNumber?: string; // e.g., Voyage Number
+  transportMeansIdentifier?: string; // e.g., Vessel Name or IMO Number
+  transportEquipmentIdentifier?: string; // e.g., Container Number
+  sealIdentifier?: string; // Security seal number
 }
 
 // --- Sub-Interfaces ---
 
-export interface ManifestItem {
-  blNumber?: string;
-  marksAndNumbers?: string;
-  numberOfPackages?: number;
-  kindOfPackages?: string;
-  descriptionOfGoods?: string;
-  
-  grossWeight?: Measurement;
-  measurement?: Measurement; // Typically Volume/CBM
+/**
+ * Base representation of a party in the Sea Cargo Manifest.
+ * Shared across Consignee, Notify Party, and Consignor.
+ */
+export interface SeaCargoManifestParty {
+  name?: string;
+  addressLine?: string;
+  city?: string;
+  country?: string;
+  email?: string;
 }
 
-export interface Measurement {
-  value?: number;
-  unit?: string;
+/**
+ * Represents a summarized goods line item within the manifest.
+ */
+export interface SeaCargoManifestGoodsItem {
+  consignmentSummaryDescription?: string;
+  shippingMarks?: string;
 }
 
 export type SeaCargoManifestW3C = SignedVerifiableCredential & {
