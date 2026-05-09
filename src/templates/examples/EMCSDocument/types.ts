@@ -2,235 +2,79 @@ import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
 /**
- * Represents the EMCS Administrative Document (e-AD).
- * Used for intra-EU movement of excise goods under duty suspension.
+ * Represents an EMCS (Excise Movement and Control System) Document.
+ * An electronic document used within the EU to track movements of excise goods 
+ * (like alcohol, tobacco, and energy products) under duty suspension.
  */
-export interface EMCSDocument {
-  "@context"?: string | object;
-  "@id"?: string;
-  "@type"?: string;
+export interface EMCS {
+  invoiceNumber?: string;
+  freightForwarderReferenceNumber?: string;
+  eoriNumber?: string; // Economic Operators Registration and Identification number
 
-  // --- Header Information ---
-  documentType?: string;
-  arc?: string; // Administrative Reference Code (21 chars)
-  sequenceNumber?: number; // Version of the document (1, 2, 3...)
-  
-  /** Date format: ISO 8601 DateTime */
-  dateOfCreation?: string;
+  // --- Dates ---
   /** Date format: YYYY-MM-DD */
-  dateOfDispatch?: string;
-  /** Time format: HH:mm:ss */
-  timeOfDispatch?: string;
-  
-  movementType?: string; // e.g., "UK-EU", "Domestic"
-  destinationType?: string; // e.g., "Tax Warehouse", "Export"
-  journeyTime?: JourneyTime;
-  
-  status?: string; // e.g., "Accepted", "Cancelled", "Delivered"
+  issueDate?: string;
+  /** Date format: YYYY-MM-DD */
+  despatchDate?: string;
+  /** Date format: YYYY-MM-DD */
+  invoiceDate?: string;
 
   // --- Parties ---
-  consignor?: EMCSTrader;
-  consignee?: EMCSTrader;
-  placeOfDispatch?: EMCSLocation;
-  placeOfDelivery?: EMCSLocation;
+  importer?: EMCSParty;
+  exporter?: EMCSParty;
+  guarantor?: EMCSParty;
 
-  // --- Competent Authorities ---
-  competentAuthorityDispatch?: CompetentAuthority;
-  competentAuthorityDestination?: CompetentAuthority;
+  // --- Locations ---
+  destinationCountry?: string;
+  exportationCountry?: string;
 
-  // --- Transport ---
-  transport?: EMCSTransport;
+  // --- Financial & Tax Data ---
+  exciseDutyAmount?: number;
+  exciseDutyAmountCurrency?: string; // e.g., "EUR", "USD"
 
-  // --- Goods (Body) ---
-  /** List of excise line items */
-  eadBody?: EADBodyItem[]; // Mapped from @set container
+  // --- Weights & Measures ---
+  grossWeight?: number;
+  grossWeightUnit?: string; // e.g., "KGM"
+  netWeight?: number;
+  netWeightUnit?: string;
+  quantity?: number; // Usually references total volume/quantity of excise goods
 
-  // --- Workflow / Lifecycle Events ---
-  // These sections represent updates or reports attached to the lifecycle of the movement
-  
-  /** Report sent by consignee upon arrival */
-  reportOfReceipt?: ReportOfReceipt;
-  
-  /** Request to change destination during movement */
-  changeOfDestination?: ChangeOfDestination;
-  
-  /** Cancellation of the movement before dispatch */
-  cancellation?: Cancellation;
-  
-  /** Alerts or rejections from authorities */
-  alertOrRejection?: AlertOrRejection;
-  
-  /** Explanations for discrepancies */
-  explanation?: Explanation;
+  // --- Goods Details ---
+  /** List of specific excise goods covered under this movement */
+  goods?: EMCSGoodsItem[]; // Mapped from @set container
 
-  // --- Customs References ---
-  importDeclaration?: { mrn?: string };
-  exportDeclaration?: { localReferenceNumber?: string; customsOfficeExport?: string; mrn?: string };
-
-  // --- Metadata ---
-  remarks?: string;
-  documentHash?: string;
-  links?: string | string[];
+  // --- Transport Details ---
+  transportMeansTypeCode?: string; // e.g., "1" for Sea, "3" for Road
+  transportMeansIdentifier?: string; // e.g., Truck license plate or Vessel name
 }
 
 // --- Sub-Interfaces ---
 
-export interface JourneyTime {
-  days?: number;
-  hours?: number;
-}
-
-/** Represents a Trader (Consignor/Consignee/Transporter) */
-export interface EMCSTrader {
-  traderExciseNumber?: string; // SEED Number
-  traderName?: string;
-  vatNumber?: string;
-  eoriNumber?: string;
-  consigneeIdentification?: string; // Specific to Consignee
-  
-  // Address fields are flat in this context
-  streetName?: string;
-  streetNumber?: string;
-  postcode?: string;
+/**
+ * Base representation of a party in the EMCS Document.
+ * Shared across Importer, Exporter, and Guarantor.
+ */
+export interface EMCSParty {
+  name?: string;
+  addressLine?: string;
   city?: string;
-  memberStateCode?: string;
+  country?: string;
+  email?: string;
 }
 
-/** Represents a Warehouse or Location */
-export interface EMCSLocation {
-  warehouseExciseNumber?: string; // SEED Number
-  warehouseName?: string;
-  streetName?: string;
-  streetNumber?: string;
-  postcode?: string;
-  city?: string;
-  memberStateCode?: string;
-}
-
-export interface CompetentAuthority {
-  memberStateCode?: string;
-  referenceNumber?: string;
-}
-
-export interface EMCSTransport {
-  transportArrangerCode?: string; // e.g., "1" (Consignor), "2" (Consignee)
-  transportArranger?: EMCSTrader;
-  firstTransporter?: EMCSTrader;
-  
-  /** List of transport units (Trucks, Containers) */
-  transportDetails?: TransportDetail[]; // Mapped from @set container
-}
-
-export interface TransportDetail {
-  transportUnitCode?: string; // e.g., "1" (Container), "2" (Vehicle)
-  identityOfTransportUnits?: string; // Plate Number / Container ID
-  commercialSealIdentification?: string;
-  sealInformation?: string;
-  complementaryInformation?: string;
-}
-
-// --- Goods Line Item ---
-
-export interface EADBodyItem {
-  bodyRecordUniqueReference?: number; // Line item number
-  exciseProductCode?: string; // e.g., "W200" (Still Wine)
-  cnCode?: string; // Combined Nomenclature (8 digits)
-  
-  quantity?: number;
-  grossMass?: number;
-  netMass?: number;
-  
-  // Specific to Alcohol/Energy
-  alcoholicStrength?: number; // % vol
-  degreePlato?: number; // Beer
-  density?: number; // Energy products
-  
-  fiscalMark?: string; // Tax stamps
-  fiscalMarkUsedFlag?: string; // "0" or "1"
-  designationOfOrigin?: string; // PDO/PGI
-  sizeOfProducer?: string; // Small producer status
-  commercialDescription?: string;
-  brandNameOfProducts?: string;
-  maturationPeriodOrAgeOfProducts?: string; // Spirits
-  
-  /** List of packages for this line item */
-  package?: EMCSPackage[]; // Mapped from @set container
-  
-  wineProduct?: WineProductDetails;
-}
-
-export interface EMCSPackage {
-  kindOfPackages?: string; // e.g., "BH" (Bunch), "CS" (Case)
+/**
+ * Represents an individual excise goods line item.
+ */
+export interface EMCSGoodsItem {
+  description?: string;
   numberOfPackages?: number;
   shippingMarks?: string;
-  sealInformation?: string;
+  productIdentifier?: string; // Specific excise product code (EPC)
+  hsCode?: string; // Harmonized System Code
 }
 
-export interface WineProductDetails {
-  wineProductCategory?: string; // e.g., "1" (Wine with PDO)
-  wineGrowingZoneCode?: string;
-  thirdCountryOfOrigin?: string;
-  otherInformation?: string;
-  /** List of oenological operations codes */
-  wineOperations?: string[]; // Mapped from @set container
+export type EMCSW3C = SignedVerifiableCredential & {
+    credentialSubject: CredentialSubject & EMCS;
 }
 
-// --- Lifecycle Report Interfaces ---
-
-export interface ReportOfReceipt {
-  /** Date format: YYYY-MM-DD */
-  dateOfArrival?: string;
-  globalConclusionOfReceipt?: string; // e.g., "1" (Accepted), "2" (Accepted with shortages)
-  complementaryInformation?: string;
-  
-  /** Results per line item */
-  bodyReportOfReceipt?: BodyReportOfReceipt[]; // Mapped from @set container
-}
-
-export interface BodyReportOfReceipt {
-  bodyRecordUniqueReference?: number;
-  indicatorOfShortageOrExcess?: string; // "S" (Shortage), "E" (Excess)
-  observedShortageOrExcess?: number;
-  exciseProductCode?: string;
-  refusedQuantity?: number;
-  
-  unsatisfactoryReason?: UnsatisfactoryReason[];
-}
-
-export interface UnsatisfactoryReason {
-  unsatisfactoryReasonCode?: string; // e.g., "1" (Damaged), "2" (Lost)
-  complementaryInformation?: string;
-}
-
-export interface ChangeOfDestination {
-  newDestinationTypeCode?: string;
-  newConsignee?: EMCSTrader; // Reusing basic trader structure (partial)
-  newPlaceOfDelivery?: EMCSLocation; // Reusing basic location structure
-  newTransportArranger?: EMCSTrader;
-}
-
-export interface Cancellation {
-  cancellationReasonCode?: string;
-  complementaryInformation?: string;
-  /** Date format: YYYY-MM-DD */
-  cancellationDate?: string;
-}
-
-export interface AlertOrRejection {
-  /** Date format: YYYY-MM-DD */
-  dateOfAlertOrRejection?: string;
-  alertOrRejectionReasonCode?: string[]; // Mapped from @set container
-}
-
-export interface Explanation {
-  /** Date format: YYYY-MM-DD */
-  dateOfExplanation?: string;
-  explanationCode?: string;
-  complementaryInformation?: string;
-}
-
-export type EMCSDocumentW3C = SignedVerifiableCredential & {
-    credentialSubject: CredentialSubject & EMCSDocument;
-}
-
-export type EMCSDocumentSchema = EMCSDocumentW3C;
+export type EMCSSchema = EMCSW3C;
