@@ -26,7 +26,7 @@ import { CITESPermitTemplates } from "./examples/CITESPermit";
 import { CertificateOfInspectionTemplates } from "./examples/CertificateOfInspection";
 import { CustomsBondTemplates } from "./examples/CustomsBond";
 import { ATACarnetTemplates } from "./examples/ATACarnet";
-import { EMCSDocumentTemplates } from "./examples/EMCSDocument";
+import { EMCSTemplates } from "./examples/EMCSDocument";
 import { ExciseGuaranteeTemplates } from "./examples/ExciseGuarantee";
 import { LetterOfCreditTemplates } from "./examples/LetterOfCredit";
 import { PaymentConfirmationTemplates } from "./examples/PaymentConfirmation";
@@ -74,7 +74,7 @@ export const registry: TemplateRegistry<any> = {
   CERTIFICATE_OF_INSPECTION_FOR_ORGANIC_PRODUCT: CertificateOfInspectionTemplates,
   CUSTOMS_BOND: CustomsBondTemplates,
   ATA_CARNET: ATACarnetTemplates,
-  EMCS_ADMINISTRATIVE_DOCUMENT: EMCSDocumentTemplates,
+  EMCS: EMCSTemplates,
   EXCISE_GUARANTEE: ExciseGuaranteeTemplates,
   LETTER_OF_CREDIT: LetterOfCreditTemplates,
   PAYMENT_CONFIRMATION: PaymentConfirmationTemplates,

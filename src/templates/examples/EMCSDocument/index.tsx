@@ -1,9 +1,9 @@
-import { EMCSDocumentTemplate } from "./EMCSDocumentTemplate"
+import { EMCSTemplate } from "./EMCSTemplate"
 
-export const EMCSDocumentTemplates = [
+export const EMCSTemplates = [
     {
-        id: "EMCS-Document-default",
-        label: "EMCS Document Template",
-        template: EMCSDocumentTemplate,
+        id: "EMCS-default",
+        label: "EMCS Template",
+        template: EMCSTemplate,
     }
 ]
