@@ -1,101 +1,59 @@
 import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
+/**
+ * Represents a Dangerous Goods Declaration (DGD).
+ * A critical safety and regulatory document prepared by the consignor or shipper to certify 
+ * that the dangerous goods being transported have been packaged, labeled, and declared 
+ * according to standard international transport regulations.
+ */
 export interface DangerousGoodsDeclaration {
-  "@context"?: string | object;
-  "@id"?: string;
-  "@type"?: string;
+  dangerousGoodsDeclarationIdentifier?: string; // DGD reference number
 
-  // --- Header & Parties ---
-  transportDocumentNumber?: string;
-  shipper?: DGDParty;
+  // --- Parties ---
   consignee?: DGDParty;
+  consignor?: DGDParty;
 
-  // --- Emergency Response ---
-  emergencyContact24h?: EmergencyContact;
-
-  // --- Transport Details ---
-  vesselFlightNumber?: string;
-  portOfLoading?: string;
-  portOfDischarge?: string;
-
-  // --- General Hazard Info ---
-  marinePollutant?: boolean;
-  flashpoint?: Flashpoint;
+  // --- Emergency Info ---
+  emergencyContact?: EmergencyContact;
 
   // --- Goods Details ---
-  /** List of dangerous goods line items */
+  /** List of dangerous goods covered by this declaration */
   dangerousGoods?: DangerousGoodsItem[]; // Mapped from @set container
-
-  // --- Certification ---
-  containerPackingCertificate?: ContainerPackingCertificate;
-
-  // --- Metadata ---
-  digitalSignature?: string;
-  documentHash?: string;
-  links?: string | string[];
 }
 
 // --- Sub-Interfaces ---
 
+/**
+ * Base representation of a party in the Dangerous Goods Declaration.
+ * Shared across Consignee and Consignor.
+ */
 export interface DGDParty {
   name?: string;
-  address?: string;
-  countryCode?: string;
-}
-
-export interface EmergencyContact {
-  phoneNumber?: string;
-  contactName?: string;
-  organization?: string; // e.g., "Chemtrec"
-}
-
-export interface Flashpoint {
-  temperature?: number;
-  unit?: string; // e.g., "CEL" (Celsius) or "FAH" (Fahrenheit)
-  testMethod?: string; // e.g., "CC" (Closed Cup)
-}
-
-export interface DangerousGoodsItem {
-  unNumber?: string; // e.g., "UN 1203"
-  properShippingName?: string; // e.g., "GASOLINE"
-  classDivision?: string; // e.g., "3"
-  packingGroup?: string; // e.g., "II"
-  subsidiaryRisk?: string; // e.g., "6.1"
-  
-  numberOfPackages?: number;
-  kindOfPackages?: string; // e.g., "Steel Drums"
-  outerPackagingType?: string; // e.g., "Fiberboard Box"
-  
-  netQuantity?: Measurement;
-  grossMass?: Measurement;
-}
-
-export interface Measurement {
-  value?: number;
-  unit?: string; // e.g., "KGM", "L"
+  addressLine?: string;
+  city?: string;
+  country?: string;
+  email?: string;
 }
 
 /**
- * Required statement certifying that the container/vehicle was packed in accordance with regulations (e.g., IMDG Code).
+ * Represents the dedicated emergency contact for the hazardous materials.
+ * Noticeably omits physical address fields in favor of direct communication lines.
  */
-export interface ContainerPackingCertificate {
-  declarationStatement?: string;
-  
-  // Packing compliance checkboxes
-  containerClean?: boolean;
-  containerDry?: boolean;
-  packagesNotDamaged?: boolean;
-  noIncompatibleSubstances?: boolean;
-  
-  // Signatory details
-  nameOfCompany?: string;
-  declarantName?: string;
-  declarantStatus?: string; // e.g., "Packer", "Driver"
-  signature?: string;
-  /** Date format: YYYY-MM-DD */
-  date?: string;
-  placeOfPacking?: string;
+export interface EmergencyContact {
+  name?: string;
+  email?: string;
+  phoneNumber?: string;
+}
+
+/**
+ * Represents an individual dangerous goods line item with mandatory safety classifications.
+ */
+export interface DangerousGoodsItem {
+  undgNumber?: string; // UN Dangerous Goods Number (e.g., "UN 1203")
+  goodsTechnicalName?: string; // Specific chemical or technical name
+  goodsClassNumber?: string; // Hazard class (e.g., "3" for Flammable Liquid)
+  packagingDangerLevelCode?: string; // Packing Group (e.g., "I", "II", or "III")
 }
 
 export type DangerousGoodsDeclarationW3C = SignedVerifiableCredential & {

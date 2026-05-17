@@ -31,6 +31,10 @@ import { ExciseGuaranteeTemplates } from "./examples/ExciseGuarantee";
 import { LetterOfCreditTemplates } from "./examples/LetterOfCredit";
 import { PaymentConfirmationTemplates } from "./examples/PaymentConfirmation";
 import { BillOfExchangeTemplates } from "./examples/BillOfExchange";
+import { AdvanceRulingApplicationTemplates } from "./examples/AdvanceRulingApplication";
+import { TransitAccompanyingDocumentTemplates } from "./examples/TransitAccompanyingDocument";
+import { TIRCarnetTemplates } from "./examples/TIRCarnet";
+import { PhytosanitaryCertificateTemplates } from "./examples/PhytosanitaryCertificate";
 // import { BillOfLadingCarrierTemplates } from "./examples/BillOfLadingCarrier";
 
 /**
@@ -79,4 +83,8 @@ export const registry: TemplateRegistry<any> = {
   LETTER_OF_CREDIT: LetterOfCreditTemplates,
   PAYMENT_CONFIRMATION: PaymentConfirmationTemplates,
   BILL_OF_EXCHANGE: BillOfExchangeTemplates,
+  ADVANCE_RULING_APPLICATION: AdvanceRulingApplicationTemplates,
+  TRANSIT_ACCOMPANYING_DOCUMENT: TransitAccompanyingDocumentTemplates,
+  TIR_CARNET: TIRCarnetTemplates,
+  PHYTOSANITARY_CERTIFICATE: PhytosanitaryCertificateTemplates
 };
