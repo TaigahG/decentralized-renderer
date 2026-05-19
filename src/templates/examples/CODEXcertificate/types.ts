@@ -1,111 +1,91 @@
 import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
+/**
+ * Represents a CODEX Document.
+ * Typically used for food safety, quality certification, or compliance 
+ * with international food standards.
+ */
 export interface CODEXCertificate {
-  "@context"?: string | object;
-  "@id"?: string;
-  "@type"?: string;
+  // --- Document & Shipment Identifiers ---
+  approvalNumber?: string;
+  permitNumber?: string;
 
-  // --- Header Information ---
-  certificateNumber?: string;
-  
-  // --- Authorities & Officials ---
-  competentAuthority?: CompetentAuthority;
-  certifyingBody?: CertifyingBody;
-  officialInspector?: OfficialInspector;
+  // --- Dates ---
+  /** Date format: YYYY-MM-DD */
+  issueDate?: string;
+  /** Date format: YYYY-MM-DD */
+  actualDepartureDate?: string;
+  /** Date format: YYYY-MM-DD */
+  permitExpiryDate?: string;
 
   // --- Parties ---
-  consignor?: CodexParty;
   consignee?: CodexParty;
+  consignorName?: string; // Note: In this context, consignor is a simple string
+  manufacturer?: CodexParty;
+  permitIssuer?: CodexParty;
 
-  // --- Trade Route ---
-  countryOfOrigin?: string; // ISO Country Code
-  countryOfDestination?: string; // ISO Country Code
+  // --- Locations & Routing ---
+  destinationCountry?: string;
+  originCountry?: string;
+  regionOfOrigin?: string;
+  originalLoadingLocation?: string;
+  arrivalLocation?: string;
+  baseportUnloadingLocation?: string;
+  placeOfIssue?: string;
+  transitLocation?: string;
+
+  // --- Weights, Quantities & Environment ---
+  grossWeight?: number;
+  grossWeightUnit?: string;
+  
+  netWeight?: number;
+  netWeightUnit?: string;
+  
+  transportTemperature?: number;
+  transportTemperatureUnit?: string; // e.g., "CEL" (Celsius) or "FAH" (Fahrenheit)
+  
+  quantity?: number;
 
   // --- Goods Details ---
-  productIdentification?: ProductIdentification;
-  traceabilityData?: TraceabilityData;
+  /** List of goods items compliant with Codex standards */
+  goods?: CodexGoodsItem[]; // Mapped from @set container
 
-  // --- Health & Compliance ---
-  attestations?: CodexAttestations;
-
-  // --- Metadata ---
-  digitalSignature?: string;
-  documentHash?: string;
-  links?: string | string[];
+  // --- Transport & Equipment ---
+  conveyanceReferenceNumber?: string;
+  modeOfTransport?: string;
+  transportMeansIdentifier?: string;
+  vehicleRegistrationNumber?: string;
+  transportEquipmentIdentifier?: string;
+  sealIdentifier?: string;
 }
 
 // --- Sub-Interfaces ---
 
-export interface CompetentAuthority {
-  authorityName?: string;
-  authorityCode?: string;
-  address?: string;
-  country?: string;
-}
-
-export interface CertifyingBody {
-  bodyName?: string;
-  bodyId?: string;
-  address?: string;
-}
-
-export interface OfficialInspector {
-  name?: string;
-  title?: string; // e.g., "Official Veterinarian"
-  signature?: string;
-  /** Date format: YYYY-MM-DD */
-  dateOfSigning?: string;
-}
-
+/**
+ * Base representation of a party or authority in the CODEX document.
+ * Shared across Consignee, Manufacturer, and Permit Issuer.
+ */
 export interface CodexParty {
   name?: string;
-  address?: string;
+  addressLine?: string;
+  city?: string;
+  country?: string;
+  email?: string;
 }
 
-export interface ProductIdentification {
-  descriptionOfProduct?: string;
-  hsCode?: string; // Harmonized System Code
-  natureOfFood?: string; // e.g., "Raw", "Processed"
-  typeOfPackaging?: string;
+/**
+ * Represents an individual goods line item, including biological identification.
+ */
+export interface CodexGoodsItem {
+  description?: string;
   numberOfPackages?: number;
-  netWeight?: Measurement;
-  identificationMarks?: string; // e.g., Seal numbers, Container numbers
-}
-
-export interface TraceabilityData {
-  lotBatchNumber?: string;
-  /** Date format: YYYY-MM-DD */
-  dateOfProduction?: string;
-  /** Date format: YYYY-MM-DD */
-  dateOfExpiry?: string;
-  /** Date format: YYYY-MM-DD */
-  bestBeforeDate?: string;
-}
-
-export interface CodexAttestations {
-  /** List of public health attestations (e.g., "Free from disease X") */
-  publicHealthAttestation?: AttestationDetail[]; // Mapped from @set container
-  
-  /** List of fair trade or quality attestations */
-  fairTradeAttestation?: AttestationDetail[]; // Mapped from @set container
-  
-  temperatureDeclaration?: TemperatureDeclaration;
-}
-
-export interface AttestationDetail {
-  attestationStatement?: string;
-  isAttested?: boolean;
-}
-
-export interface TemperatureDeclaration {
-  requiredTemperature?: Measurement;
-  storageConditions?: string; // e.g., "Keep Frozen", "Ambient"
-}
-
-export interface Measurement {
-  value?: number;
-  unit?: string; // e.g., "KGM", "CEL"
+  typeOfPackaging?: string;
+  shippingMarks?: string;
+  productIdentifier?: string;
+  hsCode?: string;
+  nameOfAnimalOrPlant?: string; // Specific biological naming
+  specimenDescription?: string; // Detail for biological/food samples
 }
 
 export type CODEXCertificateW3C = SignedVerifiableCredential & {

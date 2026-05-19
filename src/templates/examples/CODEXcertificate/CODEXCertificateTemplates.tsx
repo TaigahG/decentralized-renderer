@@ -10,265 +10,342 @@ export const CODEXCertificateTemplate: FunctionComponent<
   const data = getDocumentData(document) as CODEXCertificate;
 
   const {
-    // --- Header Information ---
-    certificateNumber,
+    // --- Document & Shipment Identifiers ---
+    approvalNumber,
+    permitNumber,
 
-    // --- Authorities & Officials ---
-    competentAuthority: {
-      authorityName,
-      authorityCode,
-      country: authorityCountry,
-    } = {},
-    certifyingBody: {
-      bodyName,
-      bodyId,
-    } = {},
-    officialInspector: {
-      name: inspectorName,
-      title: inspectorTitle,
-      dateOfSigning: signingDate,
-    } = {},
+    // --- Dates ---
+    issueDate,
+    actualDepartureDate,
+    permitExpiryDate,
 
     // --- Parties ---
-    consignor: {
-      name: consignorName,
-      address: consignorAddress,
-    } = {},
     consignee: {
-      name: consigneeName,
-      address: consigneeAddress,
+      name: receiverName,
+      addressLine: receiverAddress,
+      city: receiverCity,
+      country: receiverCountry,
+      email: receiverEmail,
+    } = {},
+    consignorName,
+    manufacturer: {
+      name: facilityName,
+      addressLine: facilityAddress,
+      city: facilityCity,
+      country: facilityCountry,
+      email: facilityEmail,
+    } = {},
+    permitIssuer: {
+      name: healthAuthority,
+      addressLine: authorityAddress,
+      city: authorityCity,
+      country: authorityCountry,
     } = {},
 
-    // --- Trade Route ---
-    countryOfOrigin,
-    countryOfDestination,
+    // --- Locations & Routing ---
+    destinationCountry,
+    originCountry,
+    regionOfOrigin,
+    originalLoadingLocation,
+    arrivalLocation,
+    baseportUnloadingLocation,
+    placeOfIssue,
+    transitLocation,
+
+    // --- Weights, Quantities & Environment ---
+    grossWeight,
+    grossWeightUnit,
+    netWeight,
+    netWeightUnit,
+    transportTemperature,
+    transportTemperatureUnit,
+    quantity,
 
     // --- Goods Details ---
-    productIdentification: {
-      descriptionOfProduct,
-      hsCode,
-      natureOfFood,
-      numberOfPackages,
-      netWeight: { value: weightValue = undefined, unit: weightUnit = undefined } = {},
-      identificationMarks,
-    } = {},
+    goods = [],
 
-    // --- Traceability Data ---
-    traceabilityData: {
-      lotBatchNumber,
-      dateOfProduction,
-      dateOfExpiry,
-      bestBeforeDate,
-    } = {},
-
-    // --- Health & Compliance ---
-    attestations: {
-      publicHealthAttestation = [],
-      fairTradeAttestation = [],
-      temperatureDeclaration: {
-        requiredTemperature: { value: tempVal = undefined, unit: tempUnit = undefined } = {},
-        storageConditions = undefined,
-      } = {},
-    } = {},
+    // --- Transport & Equipment ---
+    conveyanceReferenceNumber,
+    modeOfTransport,
+    transportMeansIdentifier,
+    vehicleRegistrationNumber,
+    transportEquipmentIdentifier,
+    sealIdentifier,
   } = data;
 
-  // Professional data box helper
-  const DataBox = ({ label, value, className = "", isCenter = false }: { label: string; value?: string | React.ReactNode; className?: string; isCenter?: boolean }) => (
-    <div className={`border border-gray-300 p-3 min-h-[85px] ${className} ${isCenter ? "text-center" : ""}`}>
-      <label className="block text-[9px] uppercase font-black text-gray-400 mb-2 tracking-widest leading-none">
-        {label}
-      </label>
-      <div className="text-sm font-bold uppercase text-gray-800 leading-tight whitespace-pre-line">
-        {value || <span className="text-gray-200 italic font-normal lowercase">not declared</span>}
+  // Helper for rendering Party details cleanly within a table cell
+  const PartyCellContent = ({
+    title,
+    name,
+    address,
+    city,
+    country,
+    email,
+  }: {
+    title: string;
+    name?: string;
+    address?: string;
+    city?: string;
+    country?: string;
+    email?: string;
+  }) => (
+    <div className="flex flex-col h-full bg-transparent">
+      <div className="text-[10px] font-black uppercase tracking-widest text-black mb-2">
+        {title}
       </div>
+      <div className="text-sm font-bold uppercase mb-1">{name || "-"}</div>
+      <div className="text-xs leading-relaxed text-black">
+        {address && <>{address}<br /></>}
+        {[city, country].filter(Boolean).join(", ")}
+      </div>
+      {email && <div className="text-[10px] font-mono mt-2">Email: {email}</div>}
     </div>
   );
 
   return (
     <Wrapper>
-      <div className="max-w-4xl mx-auto p-8 bg-white font-sans text-gray-900 border border-gray-200 shadow-2xl my-10 relative">
+      <div className="max-w-5xl mx-auto my-10 font-sans text-black bg-transparent">
         
-        {/* --- Official Header --- */}
-        <div className="flex justify-between items-start border-b-4 border-gray-900 pb-6 mb-0">
-          <div className="flex-1">
-            <h1 className="text-2xl font-black uppercase tracking-tighter leading-none mb-2">
-              Official Certificate
-            </h1>
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-4">
-              Generic Model for Food Inspection & Certification
-            </p>
-            <div className="inline-block bg-gray-100 px-3 py-1 border border-gray-200">
-               <span className="text-[9px] font-black uppercase text-gray-500 mr-2">Authority:</span>
-               <span className="text-[10px] font-black uppercase text-blue-900">{authorityName}</span>
-            </div>
-          </div>
-          <div className="text-right flex flex-col items-end">
-            <div className="bg-blue-900 text-white px-3 py-1 text-[10px] font-black uppercase tracking-widest mb-3">
-              Codex Alimentarius Standard
-            </div>
-            <p className="text-[10px] uppercase text-gray-400 font-bold mb-1 tracking-widest">Certificate No.</p>
-            <p className="text-xl font-mono font-bold text-gray-900">{certificateNumber || "PENDING"}</p>
-          </div>
-        </div>
-
-        {/* --- Top Grid: Authorities & Route --- */}
-        <div className="grid grid-cols-2">
-          <DataBox 
-            label="Consignor (Exporter)" 
-            value={`${consignorName}\n${consignorAddress}`} 
-            className="border-t-0 border-l-0"
-          />
-          <DataBox 
-            label="Consignee (Importer)" 
-            value={`${consigneeName}\n${consigneeAddress}`} 
-            className="border-t-0 border-r-0 border-l-0"
-          />
-          <div className="grid grid-cols-2 border-l-0">
-             <DataBox label="Country of Origin" value={countryOfOrigin} className="border-t-0 border-l-0" />
-             <DataBox label="Country of Destination" value={countryOfDestination} className="border-t-0 border-r-0 border-l-0" />
-          </div>
-          <DataBox 
-            label="Certifying Body" 
-            value={
-              <div className="flex flex-col">
-                <span>{bodyName}</span>
-                <span className="text-[10px] text-gray-400 font-mono mt-1">ID: {bodyId}</span>
-              </div>
-            } 
-            className="border-t-0 border-r-0 border-l-0" 
-          />
-        </div>
-
-        {/* --- Product Identification --- */}
-        <div className="bg-gray-50 border-x border-gray-300 p-4 border-b">
-          <h2 className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-3">Product Identification</h2>
-          <div className="grid grid-cols-12 gap-4">
-             <div className="col-span-6">
-                <label className="text-[8px] font-bold text-gray-400 uppercase">Description</label>
-                <div className="text-sm font-black uppercase text-gray-900">{descriptionOfProduct}</div>
-             </div>
-             <div className="col-span-3">
-                <label className="text-[8px] font-bold text-gray-400 uppercase">HS Code</label>
-                <div className="text-sm font-mono font-bold text-blue-700">{hsCode}</div>
-             </div>
-             <div className="col-span-3">
-                <label className="text-[8px] font-bold text-gray-400 uppercase">Nature of Food</label>
-                <div className="text-sm font-bold">{natureOfFood}</div>
-             </div>
-          </div>
-        </div>
-
-        {/* --- Weights & Packaging --- */}
-        <div className="grid grid-cols-3 border-x border-b border-gray-300">
-           <DataBox label="Total Packages" value={numberOfPackages} className="border-l-0 border-t-0 border-b-0" isCenter />
-           <DataBox label="Net Weight" value={`${weightValue} ${weightUnit}`} className="border-l-0 border-t-0 border-b-0" isCenter />
-           <DataBox label="Shipping Marks / ID" value={identificationMarks} className="border-r-0 border-l-0 border-t-0 border-b-0 font-mono text-[11px]" />
-        </div>
-
-        {/* --- Traceability Data --- */}
-        <div className="grid grid-cols-4 border-x border-b border-gray-300">
-           <DataBox label="Lot / Batch No." value={lotBatchNumber} className="border-l-0 border-t-0 border-b-0 bg-yellow-50/30" />
-           <DataBox label="Production Date" value={dateOfProduction} className="border-l-0 border-t-0 border-b-0" />
-           <DataBox label="Expiry Date" value={dateOfExpiry} className="border-l-0 border-t-0 border-b-0" />
-           <DataBox label="Best Before" value={bestBeforeDate} className="border-r-0 border-l-0 border-t-0 border-b-0" />
-        </div>
-
-        {/* --- Storage Conditions --- */}
-        <div className="p-4 bg-gray-900 text-white flex justify-between items-center">
-           <div>
-              <label className="block text-[8px] font-black uppercase text-gray-500 mb-1">Temperature / Storage Requirements</label>
-              <div className="text-xs font-bold uppercase tracking-widest">
-                {storageConditions || "Standard Storage"}
-              </div>
-           </div>
-           {tempVal && (
-             <div className="text-right">
-                <div className="text-2xl font-black">{tempVal}°<span className="text-sm text-gray-400">{tempUnit}</span></div>
-             </div>
-           )}
-        </div>
-
-        {/* --- Official Attestations (The Core Section) --- */}
-        <div className="border border-t-0 border-gray-300 p-8">
-           <h2 className="text-[11px] font-black uppercase text-gray-400 tracking-[0.2em] mb-6 text-center underline decoration-blue-200 underline-offset-8">Official Health Attestations</h2>
-           
-           <div className="space-y-6">
-              {/* Public Health Section */}
-              <div className="space-y-4">
-                 {publicHealthAttestation.map((att, i) => (
-                   <div key={i} className="flex items-start space-x-4">
-                      <div className={`mt-1 w-5 h-5 border-2 rounded-sm flex items-center justify-center flex-shrink-0 ${att.isAttested ? "bg-green-600 border-green-600 text-white" : "border-gray-200 bg-white"}`}>
-                        {att.isAttested && <span className="text-xs">✓</span>}
-                      </div>
-                      <div className="text-xs font-medium text-gray-700 leading-relaxed text-justify">
-                         {att.attestationStatement}
-                      </div>
+        {/* Bulletproof HTML Table for strict border enforcement */}
+        <table className="w-full border-collapse border-2 border-black table-fixed bg-transparent">
+          <tbody>
+            
+            {/* --- Header Row --- */}
+            <tr>
+              <td colSpan={2} className="border border-black p-6 align-top w-2/3">
+                <h1 className="text-3xl font-black uppercase tracking-widest leading-none mb-2">
+                  CODEX Alimentarius
+                </h1>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] border border-black px-2 py-1 inline-block">
+                  International Food & Health Certificate
+                </p>
+              </td>
+              <td className="border border-black p-0 align-top w-1/3">
+                <div className="p-3 border-b border-black">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-black mb-1">
+                    Approval Number
+                  </div>
+                  <div className="text-lg font-mono font-black tracking-widest">
+                    {approvalNumber || "DRAFT"}
+                  </div>
+                </div>
+                <div className="p-3 border-b border-black">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-black mb-1">
+                    Permit Number
+                  </div>
+                  <div className="text-sm font-mono font-bold">
+                    {permitNumber || "-"}
+                  </div>
+                </div>
+                <div className="p-3 flex justify-between">
+                   <div>
+                     <div className="text-[9px] font-bold uppercase tracking-widest text-black mb-1">Issue Date</div>
+                     <div className="text-xs font-mono font-bold">{issueDate || "-"}</div>
                    </div>
-                 ))}
-              </div>
-
-              {/* Fair Trade / Quality Section */}
-              {fairTradeAttestation.length > 0 && (
-                <div className="pt-6 border-t border-gray-100">
-                   <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest mb-3">Quality & Fair Trade Certifications</label>
-                   <div className="grid grid-cols-2 gap-4">
-                      {fairTradeAttestation.map((att, i) => (
-                        <div key={i} className="flex items-center space-x-3 p-2 bg-gray-50 rounded border border-gray-100">
-                           <div className={`w-3 h-3 rounded-full ${att.isAttested ? "bg-blue-500" : "bg-gray-200"}`}></div>
-                           <span className="text-[10px] font-bold text-gray-600 uppercase tracking-tight">{att.attestationStatement}</span>
-                        </div>
-                      ))}
+                   <div className="text-right">
+                     <div className="text-[9px] font-bold uppercase tracking-widest text-black mb-1">Expiry Date</div>
+                     <div className="text-xs font-mono font-bold">{permitExpiryDate || "-"}</div>
                    </div>
                 </div>
-              )}
-           </div>
-        </div>
+              </td>
+            </tr>
 
-        {/* --- Inspector Certification --- */}
-        <div className="grid grid-cols-2 mt-0">
-          <div className="p-6 border-r border-gray-300 border-l border-b min-h-[160px] flex flex-col justify-between">
-             <div>
-                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Official Inspector</label>
-                <div className="text-sm font-black uppercase text-gray-900">{inspectorName}</div>
-                <div className="text-[10px] text-gray-500 font-bold uppercase">{inspectorTitle}</div>
-             </div>
-             <div className="border-t border-gray-100 pt-3 flex justify-between items-end">
-                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Signed at {authorityCountry}</div>
-                <div className="text-[10px] font-mono font-bold text-gray-500">{signingDate}</div>
-             </div>
-          </div>
-          <div className="p-6 border-r border-b border-gray-300 min-h-[160px] flex flex-col justify-between bg-gray-50 relative overflow-hidden">
-             {/* Security Background */}
-             <div className="absolute top-0 right-0 p-2 opacity-5">
-                <div className="text-6xl font-black select-none">OFFICIAL</div>
-             </div>
-
-             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Electronic Validation</label>
-             <div className="space-y-1">
-                <div className="text-[10px] font-mono text-gray-400 break-all leading-tight">HASH: {data.documentHash?.substring(0, 32)}...</div>
-                <div className="flex items-center space-x-2 mt-2">
-                   <div className="px-2 py-0.5 bg-green-100 text-green-700 border border-green-200 rounded-sm text-[8px] font-black uppercase tracking-widest">
-                     Credential Validated
-                   </div>
+            {/* --- Parties Row --- */}
+            <tr>
+              <td className="border border-black p-4 align-top w-1/3">
+                <div className="flex flex-col h-full bg-transparent">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-black mb-2">
+                    1. Consignor (Sender)
+                  </div>
+                  <div className="text-sm font-bold uppercase mb-4">{consignorName || "-"}</div>
+                  
+                  <PartyCellContent 
+                    title="2. Manufacturer / Processing Facility"
+                    name={facilityName}
+                    address={facilityAddress}
+                    city={facilityCity}
+                    country={facilityCountry}
+                    email={facilityEmail}
+                  />
                 </div>
-             </div>
-             <div className="text-[9px] font-bold text-gray-300 uppercase tracking-widest border-t border-gray-200 pt-3">
-               Verified via Chaindox Traceability
-             </div>
-          </div>
-        </div>
+              </td>
+              <td className="border border-black p-4 align-top w-1/3">
+                <PartyCellContent
+                  title="3. Consignee (Receiver)"
+                  name={receiverName}
+                  address={receiverAddress}
+                  city={receiverCity}
+                  country={receiverCountry}
+                  email={receiverEmail}
+                />
+              </td>
+              <td className="border border-black p-4 align-top w-1/3">
+                <PartyCellContent
+                  title="4. Issuing Health Authority"
+                  name={healthAuthority}
+                  address={authorityAddress}
+                  city={authorityCity}
+                  country={authorityCountry}
+                />
+                {placeOfIssue && (
+                  <div className="mt-3 pt-3 border-t border-black">
+                    <div className="text-[9px] uppercase font-bold tracking-widest mb-1">Place of Issue</div>
+                    <div className="text-xs font-mono font-bold">{placeOfIssue}</div>
+                  </div>
+                )}
+              </td>
+            </tr>
 
-        {/* --- Footer --- */}
-        <div className="mt-8 pt-6 border-t border-gray-100 flex justify-between items-center text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-          <div className="flex items-center space-x-2">
-            <span className="text-gray-300 italic">This certificate complies with the Codex Guidelines (CAC/GL 38-2001)</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span>Powered by</span>
-            <span className="text-[11px] font-black text-blue-900 tracking-tighter uppercase">Chaindox</span>
-          </div>
-        </div>
+            {/* --- Geography & Logistics Row --- */}
+            <tr>
+              <td className="border border-black p-0 align-top w-1/3">
+                <div className="p-3 border-b border-black">
+                  <div className="text-[9px] uppercase font-bold tracking-widest mb-1">4. Country & Region of Origin</div>
+                  <div className="text-xs font-bold uppercase">{originCountry || "-"} {regionOfOrigin ? `(${regionOfOrigin})` : ""}</div>
+                </div>
+                <div className="p-3">
+                  <div className="text-[9px] uppercase font-bold tracking-widest mb-1">5. Destination Country</div>
+                  <div className="text-xs font-bold uppercase">{destinationCountry || "-"}</div>
+                </div>
+              </td>
+              <td className="border border-black p-0 align-top w-1/3">
+                <div className="p-3 border-b border-black">
+                  <div className="text-[9px] uppercase font-bold tracking-widest mb-1">6. Original Loading Location</div>
+                  <div className="text-xs font-bold uppercase">{originalLoadingLocation || "-"}</div>
+                </div>
+                <div className="p-3">
+                  <div className="text-[9px] uppercase font-bold tracking-widest mb-1">7. Arrival Location</div>
+                  <div className="text-xs font-bold uppercase">{arrivalLocation || "-"}</div>
+                </div>
+              </td>
+              <td className="border border-black p-0 align-top w-1/3">
+                <div className="p-3 border-b border-black">
+                  <div className="text-[9px] uppercase font-bold tracking-widest mb-1">8. Unloading & Transit</div>
+                  <div className="text-xs font-bold uppercase">
+                    {baseportUnloadingLocation ? `Unload: ${baseportUnloadingLocation}` : "-"}
+                    {transitLocation ? <><br/>Transit: {transitLocation}</> : ""}
+                  </div>
+                </div>
+                <div className="p-3">
+                  <div className="text-[9px] uppercase font-bold tracking-widest mb-1">9. Actual Departure Date</div>
+                  <div className="text-xs font-mono font-bold">{actualDepartureDate || "-"}</div>
+                </div>
+              </td>
+            </tr>
+
+            {/* --- Transport, Equipment & Environmental Row --- */}
+            <tr>
+              <td className="border border-black p-0 align-top w-1/3">
+                <div className="p-3 border-b border-black">
+                  <div className="text-[9px] uppercase font-bold tracking-widest mb-1">10. Mode & Means of Transport</div>
+                  <div className="text-xs font-bold uppercase">{modeOfTransport || "-"}</div>
+                  <div className="text-xs font-bold uppercase mt-1">{transportMeansIdentifier || "-"}</div>
+                </div>
+                <div className="p-3">
+                  <div className="text-[9px] uppercase font-bold tracking-widest mb-1">11. Conveyance & Vehicle Reg.</div>
+                  <div className="text-xs font-mono font-bold">{conveyanceReferenceNumber || "-"}</div>
+                  <div className="text-xs font-mono font-bold mt-1">{vehicleRegistrationNumber || "-"}</div>
+                </div>
+              </td>
+              <td className="border border-black p-0 align-top w-1/3">
+                <div className="p-3 border-b border-black">
+                  <div className="text-[9px] uppercase font-bold tracking-widest mb-1">12. Transport Equipment (Container)</div>
+                  <div className="text-xs font-mono font-bold">{transportEquipmentIdentifier || "-"}</div>
+                </div>
+                <div className="p-3">
+                  <div className="text-[9px] uppercase font-bold tracking-widest mb-1">13. Official Seal Identifier</div>
+                  <div className="text-sm font-mono font-black">{sealIdentifier || "NONE DECLARED"}</div>
+                </div>
+              </td>
+              <td className="border border-black p-0 align-top w-1/3">
+                <div className="p-3 border-b border-black h-full flex flex-col justify-center bg-gray-50">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-black mb-2">14. Transport Temperature</div>
+                  <div className="text-lg font-mono font-black border border-black p-2 inline-block bg-transparent w-fit">
+                    {transportTemperature !== undefined ? `${transportTemperature} ${transportTemperatureUnit || ""}` : "AMBIENT"}
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            {/* --- Weights & Quantities Row --- */}
+            <tr>
+              <td className="border border-black p-3 align-top w-1/3">
+                <div className="text-[9px] uppercase font-bold tracking-widest mb-1">15. Total Quantity</div>
+                <div className="text-sm font-mono font-bold">{quantity !== undefined ? quantity : "-"}</div>
+              </td>
+              <td className="border border-black p-3 align-top w-1/3">
+                <div className="text-[9px] uppercase font-bold tracking-widest mb-1">16. Net Weight</div>
+                <div className="text-sm font-mono font-bold">{netWeight !== undefined ? `${netWeight} ${netWeightUnit || ""}` : "-"}</div>
+              </td>
+              <td className="border border-black p-3 align-top w-1/3">
+                <div className="text-[9px] uppercase font-bold tracking-widest mb-1">17. Gross Weight</div>
+                <div className="text-sm font-mono font-bold">{grossWeight !== undefined ? `${grossWeight} ${grossWeightUnit || ""}` : "-"}</div>
+              </td>
+            </tr>
+
+            {/* --- Goods Table Row --- */}
+            <tr>
+              <td colSpan={3} className="border border-black p-0">
+                <table className="w-full border-collapse table-fixed bg-transparent">
+                  <thead>
+                    <tr>
+                      <th className="border-b border-r border-black p-3 text-[10px] font-black uppercase tracking-widest text-center w-1/12">
+                        Item
+                      </th>
+                      <th className="border-b border-r border-black p-3 text-[10px] font-black uppercase tracking-widest text-left w-4/12">
+                        18. Description & Shipping Marks
+                      </th>
+                      <th className="border-b border-r border-black p-3 text-[10px] font-black uppercase tracking-widest text-left w-3/12">
+                        19. Biological / Specimen Name
+                      </th>
+                      <th className="border-b border-r border-black p-3 text-[10px] font-black uppercase tracking-widest text-center w-2/12">
+                        20. Classification
+                      </th>
+                      <th className="border-b border-black p-3 text-[10px] font-black uppercase tracking-widest text-center w-2/12">
+                        21. Pkg / Type
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {goods.length > 0 ? (
+                      goods.map((item, i) => (
+                        <tr key={i}>
+                          <td className="border-b border-r border-black p-3 text-xs font-mono font-bold text-center align-top">
+                            {i + 1}
+                          </td>
+                          <td className="border-b border-r border-black p-3 text-xs font-bold uppercase leading-relaxed whitespace-pre-wrap align-top">
+                            {item.description || "-"}
+                            {item.shippingMarks && <div className="font-mono text-[10px] mt-1 text-gray-800">Marks: {item.shippingMarks}</div>}
+                          </td>
+                          <td className="border-b border-r border-black p-3 text-xs font-serif italic align-top">
+                            {item.nameOfAnimalOrPlant || "-"}
+                            {item.specimenDescription && <div className="text-[10px] mt-1 font-sans not-italic text-gray-800">{item.specimenDescription}</div>}
+                          </td>
+                          <td className="border-b border-r border-black p-3 text-center text-xs font-mono align-top">
+                            {item.hsCode ? <div>HS: {item.hsCode}</div> : ""}
+                            {item.productIdentifier ? <div>ID: {item.productIdentifier}</div> : ""}
+                            {!item.hsCode && !item.productIdentifier && "-"}
+                          </td>
+                          <td className="border-b border-black p-3 text-center text-xs align-top">
+                            <span className="font-black">{item.numberOfPackages !== undefined ? item.numberOfPackages : "-"}</span>
+                            {item.typeOfPackaging ? <div className="text-[10px] mt-1 uppercase">{item.typeOfPackaging}</div> : ""}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="border-b border-black p-8 text-center text-xs italic uppercase">
+                          No Goods Items Declared
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </Wrapper>
   );
-}
+};

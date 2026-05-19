@@ -1,118 +1,69 @@
 import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
+/**
+ * Represents a Customs Declaration.
+ * An official document that lists and provides details of goods that are being imported or exported.
+ * It is used by customs authorities to control the flow of goods, ensure compliance, and collect appropriate taxes and duties.
+ */
 export interface CustomsDeclaration {
-  "@context"?: string | object;
-  "@id"?: string;
-  "@type"?: string;
-
-  // --- Header Information ---
-  declarationType?: string; // e.g., "IM" (Import), "EX" (Export)
-  procedureCode?: string; // e.g., "4000" (Release for free circulation)
-  authorizationNumber?: string; // For simplified procedures
+  // --- Document & Shipment Identifiers ---
+  transportContractDocument?: string; // Link to the underlying transport contract (e.g., B/L or Waybill)
+  invoiceNumber?: string; // Link to the commercial invoice
 
   // --- Parties ---
-  consignorExporter?: CustomsParty;
-  consigneeImporter?: CustomsParty;
-  declarantRepresentative?: DeclarantRepresentative;
+  importer?: CustomsParty;
+  consignee?: CustomsParty;
+  exporter?: CustomsParty;
 
-  // --- Financial & Delivery ---
-  deliveryTerms?: string; // Incoterms (e.g., "CIF LONDON")
-  invoiceCurrency?: string; // ISO Currency Code (e.g., "USD")
-  invoiceTotalAmount?: number; // Total amount as decimal
-  
-  statisticalValue?: MonetaryAmount; // Value for trade statistics (often CIF at border)
+  // --- Financials ---
+  totalInvoiceAmount?: number;
+  taxAmount?: number;
+  totalInvoiceAmountCurrency?: string; // e.g., "USD", "EUR"
 
-  // --- Transport ---
-  identityOfTransport?: IdentityOfTransport;
+  // --- Weights & Measures ---
+  grossWeight?: number;
+  grossWeightUnit?: string; // e.g., "KGM"
 
   // --- Goods Details ---
-  /** List of line items declared */
-  goodsItems?: CustomsGoodsItem[]; // Mapped from @set container
+  /** List of goods covered under this customs declaration */
+  goods?: CustomsGoodsItem[]; // Mapped from @set container
 
-  // --- Tax Summary (Global) ---
-  /** Summary of taxes payable across all items */
-  totalTaxSummary?: TaxSummaryLine[]; // Mapped from @set container
-
-  // --- Execution ---
-  placeOfDeclaration?: string;
-  /** Date format: YYYY-MM-DD */
-  dateOfDeclaration?: string;
-  customsOfficeOfEntry?: string; // Code of the office
-  customsOfficeOfExit?: string; // Code of the office
-
-  // --- Metadata ---
-  digitalSignature?: string;
-  documentHash?: string;
-  links?: string | string[];
+  // --- Routing & Security ---
+  customsOfficeOfEntry?: CustomsOfficeLocation;
+  sealIdentifier?: string; // Security seal number for the container/transport
 }
 
 // --- Sub-Interfaces ---
 
+/**
+ * Base representation of a party in the Customs Declaration.
+ * Shared across Importer, Consignee, and Exporter.
+ */
 export interface CustomsParty {
   name?: string;
-  address?: string;
-  eoriNumber?: string; // Economic Operators Registration and Identification number
+  addressLine?: string;
+  city?: string;
+  country?: string;
+  email?: string;
 }
 
-export interface DeclarantRepresentative extends CustomsParty {
-  statusCode?: string; // e.g., "2" (Direct Representation), "3" (Indirect)
+/**
+ * Represents the specific customs office handling the entry.
+ * Note: Uses a simpler address structure compared to standard parties.
+ */
+export interface CustomsOfficeLocation {
+  name?: string;
+  address?: string; // Uses 'address' instead of 'addressLine'
 }
 
-export interface IdentityOfTransport {
-  modeOfTransport?: string; // e.g., "1" (Sea), "4" (Air)
-  transportIdentifier?: string; // Vessel Name, Truck Plate, Flight No
-  nationality?: string; // Country Code of the vehicle
-}
-
-export interface MonetaryAmount {
-  currencyCode?: string;
-  amount?: number;
-}
-
-export interface Measurement {
-  value?: number;
-  unit?: string; // e.g., "KGM"
-}
-
-// --- Line Item Details ---
-
+/**
+ * Represents an individual goods line item being declared to customs.
+ */
 export interface CustomsGoodsItem {
-  itemNumber?: number;
-  commodityCode?: string; // HS Code / CN Code / TARIC
-  goodsDescription?: string;
-  countryOfOriginCode?: string; // ISO Country Code
-  
-  grossMass?: Measurement;
-  netMass?: Measurement;
-  supplementaryUnits?: Measurement; // e.g., Number of pairs for shoes, Liters for alcohol
-  
-  itemPrice?: MonetaryAmount;
-  statisticalValueItem?: MonetaryAmount;
-
-  /** Tax calculations specific to this item */
-  taxCalculation?: TaxCalculationDetail[]; // Mapped from @set container
-  
-  /** Supporting documents (Invoices, Certificates, Licenses) */
-  documentReferences?: SupportingDocument[]; // Mapped from @set container
-}
-
-export interface TaxCalculationDetail {
-  typeOfTax?: string; // e.g., "A00" (Customs Duty), "B00" (VAT)
-  taxBase?: MonetaryAmount; // The amount on which tax is calculated
-  rate?: number; // Percentage or specific rate
-  taxAmount?: MonetaryAmount;
-  methodOfPayment?: string; // e.g., "A" (Cash), "E" (Deferment Account)
-}
-
-export interface SupportingDocument {
-  documentType?: string; // e.g., "N380" (Commercial Invoice)
-  documentReference?: string; // The ID/Number of the doc
-}
-
-export interface TaxSummaryLine {
-  typeOfTax?: string;
-  totalTaxAmount?: MonetaryAmount;
+  description?: string;
+  numberOfPackages?: number;
+  hsCode?: string; // Harmonized System Code for accurate tariff classification
 }
 
 export type CustomsDeclarationW3C = SignedVerifiableCredential & {
