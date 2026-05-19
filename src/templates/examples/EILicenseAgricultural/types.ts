@@ -1,115 +1,60 @@
 import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
+/**
+ * Represents a License for Agricultural Products.
+ * An official permit required for the import or export of specific agricultural goods, 
+ * ensuring compliance with national and international trade quotas and regulations.
+ */
 export interface EILIcenseAgricultural {
-  "@context"?: string | object;
-  "@id"?: string;
-  "@type"?: string;
+  // --- Document Identifiers ---
+  documentIdentifier?: string; // The license reference number
+  permitNumber?: string;
 
-  // --- License Header ---
-  licenseNumber?: string;
-  licenseTypeCode?: string; // e.g., "EXPORT", "IMPORT"
-  status?: string; // e.g., "ACTIVE", "EXPIRED", "REVOKED"
-
+  // --- Dates ---
   /** Date format: YYYY-MM-DD */
-  dateOfIssue?: string;
+  issueDate?: string;
   /** Date format: YYYY-MM-DD */
-  expiryDate?: string;
+  permitExpiryDate?: string;
 
-  // --- Parties ---
-  issuingAuthority?: IssuingAuthority;
-  licenseHolder?: LicenseHolder;
-  supplierBuyer?: SupplierBuyer;
+  // --- Parties & Authorities ---
+  permitIssuer?: AgriLicenseParty; // The agency issuing the license
+  managementAuthority?: AgriLicenseParty; // The governing body managing the quotas/regulations
 
-  // --- Trade Route ---
-  countryOfOrigin?: string;
-  countryOfDestination?: string;
+  // --- Routing / Locations ---
+  destinationCountry?: string;
+  exportationCountry?: string;
+  originCountry?: string;
 
-  // --- Product Details ---
-  goodsDetails?: GoodsDetails;
+  // --- Quantities ---
+  quantity?: number; // Total approved quantity under this license
 
-  // --- Quotas & Financials ---
-  quotaAndBalances?: QuotaAndBalances;
-  financialsAndConditions?: FinancialsAndConditions;
-
-  /** History of shipments against this license */
-  utilizationHistory?: UtilizationRecord[]; // Mapped from @set container
-
-  // --- Metadata ---
-  digitalSignature?: string;
-  documentHash?: string;
-  links?: string | string[];
+  // --- Goods Details ---
+  /** List of agricultural goods authorized by this license */
+  goods?: AgriLicenseGoodsItem[]; // Mapped from @set container
 }
 
 // --- Sub-Interfaces ---
 
-export interface IssuingAuthority {
-  authorityName?: string;
-  authorityCode?: string;
+/**
+ * Base representation of a party or authority in the Agricultural License.
+ * Shared across Permit Issuer and Management Authority.
+ */
+export interface AgriLicenseParty {
+  name?: string;
+  addressLine?: string;
+  city?: string;
   country?: string;
+  email?: string;
 }
 
-export interface LicenseHolder {
-  name?: string;
-  businessRegistrationNumber?: string;
-  taxId?: string;
-  address?: string;
-  countryCode?: string;
-}
-
-export interface SupplierBuyer {
-  name?: string;
-  address?: string;
-  countryCode?: string;
-  isOpenLicense?: boolean; // True if license applies to any supplier/buyer
-}
-
-export interface GoodsDetails {
-  hsCode?: string;
-  productDescription?: string;
-  cropYear?: string; // e.g., "2023/2024"
-  usageIntention?: string; // e.g., "Human Consumption", "Animal Feed"
-}
-
-export interface QuotaAndBalances {
-  authorizedQuantityTotal?: Measurement;
-  authorizedValueTotal?: MonetaryAmount;
-  
-  utilizedQuantity?: Measurement;
-  utilizedValue?: MonetaryAmount;
-  
-  remainingQuantity?: Measurement;
-  remainingValue?: MonetaryAmount;
-  
-  tolerancePercentage?: number; // +/- tolerance allowed on quantity/value
-}
-
-export interface FinancialsAndConditions {
-  incoterms?: string;
-  currency?: string;
-  paymentMethod?: string;
-  specialConditions?: string[]; // Mapped from @set container
-}
-
-export interface UtilizationRecord {
-  shipmentReference?: string; // e.g., Invoice No or BL No
-  /** Date format: YYYY-MM-DD */
-  utilizationDate?: string;
-  quantityUtilized?: Measurement;
-  valueUtilized?: MonetaryAmount;
-  customsDeclarationNumber?: string;
-}
-
-// --- Reusable Types ---
-
-export interface Measurement {
-  value?: number;
-  unit?: string; // e.g., "MT" (Metric Tons)
-}
-
-export interface MonetaryAmount {
-  currencyCode?: string;
-  amount?: number;
+/**
+ * Represents an individual agricultural goods line item approved under the license.
+ */
+export interface AgriLicenseGoodsItem {
+  description?: string;
+  productIdentifier?: string; // Specific product code
+  hsCode?: string; // Harmonized System Code
 }
 
 export type EILIcenseAgriculturalW3C = SignedVerifiableCredential & {
