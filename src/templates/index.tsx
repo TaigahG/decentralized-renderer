@@ -62,7 +62,7 @@ export const registry: TemplateRegistry<any> = {
   SEA_WAYBILL: SeaWaybillTemplates,
   PACKING_LIST: PackingListTemplates,
   SHIPPER_LETTER_OF_INSTRUCTIONS: ShipperLetterOfInstructionsTemplates,
-  SHIP_DELIVERY_ORDER: ShipDeliveryOrderTemplates,
+  SHIPS_DELIVERY_ORDER: ShipDeliveryOrderTemplates,
   AIR_WAYBILL: AirWaybillTemplates,
   SEA_CARGO_MANIFEST: SeaCargoManifestTemplates,
   AIR_CARGO_MANIFEST: AirCargoManifestTemplates,
