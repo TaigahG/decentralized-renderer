@@ -10,251 +10,147 @@ export const CustomsBondTemplate: FunctionComponent<
   const data = getDocumentData(document) as CustomsBond;
 
   const {
-    // --- Header Information ---
-    bondNumber,
-    bondType,
-    activityCode,
-    effectiveDate,
-    expirationDate,
-
-    // --- Parties ---
-    principal: {
+    // --- Parties (The Legal Contract) ---
+    importer: {
       name: principalName,
-      address: principalAddress,
+      addressLine: principalAddress,
       city: principalCity,
-      stateProvince: principalState,
-      postalCode: principalZip,
-      countryCode: principalCountry,
-      taxId: principalTaxId,
-      ein: principalEin,
-      eoriNumber: principalEori,
-      contactPerson: principalContact,
+      country: principalCountry,
+      email: principalEmail,
     } = {},
-    surety: {
+    insuranceCompany: {
       name: suretyName,
-      suretyCode,
-      address: suretyAddress,
-      licenseNumber: suretyLicense,
-    } = {},
-    obligee: {
-      name: obligeeName,
-      customsAuthority,
+      addressLine: suretyAddress,
+      city: suretyCity,
+      country: suretyCountry,
+      email: suretyEmail,
     } = {},
 
-    // --- Financials ---
-    financials: {
-      totalLiability: {
-        amount: liabilityAmount = undefined,
-        currencyCode: liabilityCurrency = undefined
-      } = {},
-      limitOfLiability: {
-        amount: limitAmount = undefined
-      } = {},
-      premiumAmount: {
-        amount: premiumVal = undefined
-      } = {},
-    } = {},
+    // --- Locations & Routing ---
+    placeOfTheDeliveryOfTheGoods: deliveryLocation,
+    despatch: pointOfOrigin,
+    exportationCountry,
 
-    // --- Scope ---
-    scopeAndLocation: {
-      portOfExecution,
-      coverageScope,
-      coveredPorts = [],
-    } = {},
-
-    // --- Execution & Signatures ---
-    execution: {
-      dateOfExecution,
-      placeOfExecution,
-      signatureOfPrincipal,
-      signatureOfSurety,
-      officialSeal,
-      witness: {
-        name: witnessName = undefined,
-        signature: witnessSignature = undefined,
-        dateOfWitnessing = undefined,
-      } = {},
-    } = {},
+    // --- Valuation & Financials ---
+    customsValue,
+    customsValueCurrency: currency,
+    statisticalValue,
   } = data;
 
-  // Professional box helper
-  const InfoBox = ({ label, value, className = "", highlight = false }: { label: string; value?: string | React.ReactNode; className?: string; highlight?: boolean }) => (
-    <div className={`border border-gray-300 p-3 min-h-[85px] ${highlight ? "bg-gray-50" : ""} ${className}`}>
-      <label className="block text-[9px] uppercase font-black text-gray-400 mb-2 tracking-widest leading-none">{label}</label>
-      <div className="text-sm font-bold uppercase text-gray-800 leading-tight whitespace-pre-line">{value || "-"}</div>
+  // --- Helper Components ---
+  const Label = ({ text }: { text: string }) => (
+    <div className="text-[9px] uppercase font-black tracking-widest mb-1 text-black">
+      {text}
+    </div>
+  );
+
+  const Value = ({ text }: { text?: string | number }) => (
+    <div className="text-xs font-mono font-bold text-black break-words">
+      {text || "-"}
+    </div>
+  );
+
+  const DataCell = ({ label, value, className = "" }: { label: string; value?: string | number; className?: string }) => (
+    <div className={`p-2 h-full flex flex-col justify-start ${className}`}>
+      <Label text={label} />
+      <Value text={value} />
+    </div>
+  );
+
+  const PartyBox = ({ title, name, address, city, country, email }: any) => (
+    <div className="p-3 h-full flex flex-col border-b border-black last:border-b-0">
+      <Label text={title} />
+      <div className="text-sm font-bold uppercase mb-1">{name || "-"}</div>
+      <div className="text-xs text-black leading-snug flex-grow">
+        {address && <div>{address}</div>}
+        {[city, country].filter(Boolean).join(", ")}
+      </div>
+      {email && (
+        <div className="text-[10px] font-mono mt-1 pt-1 border-t border-black/20">
+          {email}
+        </div>
+      )}
     </div>
   );
 
   return (
     <Wrapper>
-      <div className="max-w-4xl mx-auto p-8 bg-white font-sans text-gray-900 border border-gray-200 shadow-2xl my-10 relative">
-        
-        {/* --- Header Section --- */}
-        <div className="flex justify-between items-start border-b-4 border-gray-900 pb-6 mb-0">
-          <div className="flex-1">
-            <h1 className="text-3xl font-black uppercase tracking-tighter leading-none mb-1 text-gray-900">
-              Customs Bond
-            </h1>
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-4">
-              Revenue & Import Compliance Guarantee
-            </p>
-            <div className="flex gap-2">
-              <div className="bg-gray-900 text-white px-3 py-1 text-[10px] font-black uppercase tracking-widest">
-                Activity Code: {activityCode || "1"}
-              </div>
-              <div className="border border-gray-900 text-gray-900 px-3 py-1 text-[10px] font-black uppercase tracking-widest">
-                {bondType || "Continuous"} Bond
-              </div>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-[9px] uppercase text-gray-400 font-bold mb-1 tracking-widest">Bond No.</p>
-            <p className="text-xl font-mono font-bold text-blue-900">{bondNumber || "PENDING"}</p>
-            <div className="mt-2 text-[10px] font-bold uppercase text-gray-500">
-               Effective: {effectiveDate || "N/A"}
-            </div>
-          </div>
-        </div>
+      <div className="max-w-5xl mx-auto my-10 font-sans text-black bg-transparent">
+        <table className="w-full border-collapse border-2 border-black table-fixed bg-transparent">
+          <tbody>
+            
+            {/* --- Header Row --- */}
+            <tr>
+              <td colSpan={4} className="border-b-2 border-black p-4 text-center align-middle">
+                <h1 className="text-2xl font-black uppercase tracking-widest leading-none mb-1">
+                  Customs Bond
+                </h1>
+                <p className="text-[9px] font-bold uppercase tracking-widest">
+                  Guarantee for Customs Duties and Taxes
+                </p>
+              </td>
+            </tr>
 
-        {/* --- Obligee (The Government) --- */}
-        <div className="bg-gray-50 border border-gray-300 border-t-0 p-4 border-b-0">
-           <label className="block text-[9px] uppercase font-black text-gray-400 mb-1 tracking-widest">Bond Obligee (Beneficiary)</label>
-           <div className="text-lg font-black text-gray-900 uppercase">{obligeeName || "United States of America"}</div>
-           <div className="text-xs text-gray-600 font-bold uppercase tracking-wide">{customsAuthority || "U.S. Customs and Border Protection"}</div>
-        </div>
+            {/* --- Parties Row: Principal & Surety --- */}
+            <tr>
+              <td colSpan={2} className="border border-black p-0 align-top w-1/2">
+                <PartyBox 
+                  title="1. Principal / Importer" 
+                  name={principalName} 
+                  address={principalAddress} 
+                  city={principalCity} 
+                  country={principalCountry} 
+                  email={principalEmail} 
+                />
+              </td>
+              <td colSpan={2} className="border border-black p-0 align-top w-1/2">
+                <PartyBox 
+                  title="2. Surety / Insurance Company" 
+                  name={suretyName} 
+                  address={suretyAddress} 
+                  city={suretyCity} 
+                  country={suretyCountry} 
+                  email={suretyEmail} 
+                />
+              </td>
+            </tr>
 
-        {/* --- Parties Grid --- */}
-        <div className="grid grid-cols-2 border border-gray-300 border-t-0">
-          {/* Principal */}
-          <div className="p-4 border-r border-gray-300">
-             <label className="block text-[9px] uppercase font-black text-gray-400 mb-2 tracking-widest">Principal (Importer)</label>
-             <div className="mb-2">
-                <div className="font-bold text-sm uppercase">{principalName}</div>
-                <div className="text-[10px] text-gray-500 leading-tight mt-1">
-                  {principalAddress}<br/>
-                  {principalCity} {principalState} {principalZip}<br/>
-                  {principalCountry}
+            {/* --- Locations & Routing --- */}
+            <tr>
+              <td colSpan={4} className="border-2 border-black p-0">
+                <div className="grid grid-cols-3 divide-x divide-black">
+                  <DataCell label="Point of Origin (Despatch)" value={pointOfOrigin} />
+                  <DataCell label="Exportation Country" value={exportationCountry} />
+                  <DataCell label="Place of Delivery (Termination of Bond)" value={deliveryLocation} />
                 </div>
-             </div>
-             <div className="bg-blue-50 p-2 border border-blue-100 rounded-sm">
-                <label className="block text-[8px] uppercase font-black text-blue-400 mb-1">Identification Number</label>
-                <div className="font-mono font-bold text-blue-900 text-xs">
-                   {principalEin ? `EIN: ${principalEin}` : principalEori ? `EORI: ${principalEori}` : `TAX ID: ${principalTaxId}`}
+              </td>
+            </tr>
+
+            {/* --- Valuation Section --- */}
+            <tr>
+              <td colSpan={4} className="border-t-2 border-black p-2 bg-black text-white text-center">
+                <span className="text-[10px] font-black uppercase tracking-widest">
+                  Financial Valuation & Liability
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td colSpan={4} className="border-2 border-black p-0">
+                <div className="grid grid-cols-2 divide-x divide-black">
+                  <DataCell 
+                    label="Customs Appraised Value" 
+                    value={customsValue ? `${customsValue} ${currency || ""}` : undefined} 
+                  />
+                  <DataCell 
+                    label="Statistical Value" 
+                    value={statisticalValue ? `${statisticalValue} ${currency || ""}` : undefined} 
+                  />
                 </div>
-             </div>
-          </div>
-
-          {/* Surety */}
-          <div className="p-4">
-             <label className="block text-[9px] uppercase font-black text-gray-400 mb-2 tracking-widest">Surety (Insurer)</label>
-             <div className="mb-2">
-                <div className="font-bold text-sm uppercase">{suretyName}</div>
-                <div className="text-[10px] text-gray-500 leading-tight mt-1">{suretyAddress}</div>
-             </div>
-             <div className="flex gap-4">
-               <div>
-                  <label className="block text-[8px] uppercase font-black text-gray-400 mb-1">Surety Code</label>
-                  <div className="font-mono font-bold text-gray-700 text-xs">{suretyCode}</div>
-               </div>
-               <div>
-                  <label className="block text-[8px] uppercase font-black text-gray-400 mb-1">License No.</label>
-                  <div className="font-mono font-bold text-gray-700 text-xs">{suretyLicense}</div>
-               </div>
-             </div>
-          </div>
-        </div>
-
-        {/* --- Financial Liability (The Money) --- */}
-        <div className="grid grid-cols-3 bg-gray-900 text-white border-b border-gray-800">
-           <div className="p-4 border-r border-gray-800">
-              <label className="block text-[8px] uppercase font-black text-gray-500 mb-1">Total Liability Amount</label>
-              <div className="text-xl font-black">{liabilityCurrency} {liabilityAmount?.toLocaleString()}</div>
-           </div>
-           <div className="p-4 border-r border-gray-800">
-              <label className="block text-[8px] uppercase font-black text-gray-500 mb-1">Limit of Liability</label>
-              <div className="text-sm font-bold text-gray-300">{limitAmount ? `${liabilityCurrency} ${limitAmount.toLocaleString()}` : "No Limit Specified"}</div>
-           </div>
-           <div className="p-4">
-              <label className="block text-[8px] uppercase font-black text-gray-500 mb-1">Premium</label>
-              <div className="text-sm font-bold text-gray-300">{premiumVal ? `${liabilityCurrency} ${premiumVal.toLocaleString()}` : "As Agreed"}</div>
-           </div>
-        </div>
-
-        {/* --- Scope & Execution Location --- */}
-        <div className="grid grid-cols-3 border-x border-b border-gray-300">
-           <InfoBox label="Port of Execution" value={portOfExecution} className="border-l-0 border-t-0 border-b-0" />
-           <InfoBox label="Date of Execution" value={dateOfExecution} className="border-l-0 border-t-0 border-b-0" />
-           <InfoBox label="Coverage Scope" value={coverageScope} className="border-r-0 border-l-0 border-t-0 border-b-0" highlight />
-        </div>
-
-        {/* --- Legal Text --- */}
-        <div className="p-6 border-x border-b border-gray-300 bg-gray-50">
-           <p className="text-[9px] text-gray-500 italic text-justify leading-relaxed">
-             Witness, our hands and seals this <span className="font-bold text-gray-700">{dateOfExecution}</span>. By signing below, the Principal and Surety bind themselves, their heirs, executors, administrators, successors, and assigns, jointly and severally, to pay the amount of this bond to the Obligee upon failure to comply with the conditions of the bond.
-           </p>
-        </div>
-
-        {/* --- Signatures Section --- */}
-        <div className="grid grid-cols-2 border-x border-b border-gray-300">
-           {/* Principal Signature */}
-           <div className="p-8 border-r border-gray-300 relative">
-              <label className="block text-[9px] uppercase font-black text-gray-400 mb-6 tracking-widest text-center">Signed for Principal</label>
-              
-              <div className="font-script text-2xl text-blue-900 text-center mb-2">{signatureOfPrincipal || "Electronic Signature"}</div>
-              <div className="h-px bg-gray-300 w-2/3 mx-auto mb-2"></div>
-              
-              <div className="text-center">
-                 <div className="text-[10px] font-bold uppercase text-gray-800">{principalName}</div>
-                 <div className="text-[8px] font-bold text-gray-400 uppercase mt-1">Principal / Importer of Record</div>
-              </div>
-           </div>
-
-           {/* Surety Signature */}
-           <div className="p-8 relative bg-gray-50/50">
-              {/* Digital Seal Watermark */}
-              <div className="absolute top-4 right-4 opacity-10 pointer-events-none">
-                 <div className="w-16 h-16 border-4 border-gray-800 rounded-full flex items-center justify-center">
-                    <span className="text-[6px] font-black text-center text-gray-800">CORPORATE<br/>SEAL</span>
-                 </div>
-              </div>
-
-              <label className="block text-[9px] uppercase font-black text-gray-400 mb-6 tracking-widest text-center">Signed for Surety</label>
-              
-              <div className="font-script text-2xl text-blue-900 text-center mb-2">{signatureOfSurety || "Electronic Signature"}</div>
-              <div className="h-px bg-gray-300 w-2/3 mx-auto mb-2"></div>
-              
-              <div className="text-center">
-                 <div className="text-[10px] font-bold uppercase text-gray-800">{suretyName}</div>
-                 <div className="text-[8px] font-bold text-gray-400 uppercase mt-1">Attorney-in-Fact</div>
-              </div>
-           </div>
-        </div>
-
-        {/* --- Witness & Verification --- */}
-        <div className="grid grid-cols-2 border-x border-b border-gray-300">
-           <div className="p-4 border-r border-gray-300">
-              <label className="block text-[8px] uppercase font-black text-gray-400 mb-1">Witnessed By</label>
-              <div className="text-xs font-bold text-gray-700">{witnessName}</div>
-              <div className="text-[8px] text-gray-400 italic">{witnessSignature ? "Digitally Witnessed" : ""} {dateOfWitnessing}</div>
-           </div>
-           <div className="p-4 flex flex-col justify-center">
-               <div className="flex items-center space-x-2">
-                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                 <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">Active Chaindox Bond</span>
-              </div>
-              <div className="text-[8px] font-mono text-gray-400 mt-1">HASH: {data.documentHash?.substring(0, 32)}...</div>
-           </div>
-        </div>
-
-        {/* --- Footer --- */}
-        <div className="mt-8 pt-6 border-t border-gray-100 flex justify-between items-center text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-          <div>CBP Form 301 / International Surety Standard Compatible</div>
-          <div className="flex items-center space-x-2">
-            <span>Powered by</span>
-            <span className="text-[11px] font-black text-blue-900 tracking-tighter uppercase">Chaindox</span>
-          </div>
-        </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </Wrapper>
   );
-}
+};

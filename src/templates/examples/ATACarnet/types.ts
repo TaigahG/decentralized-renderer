@@ -1,128 +1,122 @@
 import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
+/**
+ * Represents an ATA Carnet.
+ * An international customs document that permits the temporary, duty-free and tax-free 
+ * export and import of goods (such as commercial samples, professional equipment, 
+ * or exhibition goods) for up to one year.
+ */
 export interface ATACarnet {
-  "@context"?: string | object;
-  "@id"?: string;
-  "@type"?: string;
+  customsDeclarationDocumentReference?: string;
+  goodsDeclarationNumber?: string;
+  permitNumber?: string;
 
-  // --- Header Information ---
-  carnetNumber?: string; // Format often corresponds to CountryCode-Year-Number (e.g., US-2023-12345)
+  // --- Dates ---
   /** Date format: YYYY-MM-DD */
   issueDate?: string;
   /** Date format: YYYY-MM-DD */
-  validUntil?: string; // Strictly 1 year from issue date usually
+  actualArrivalDate?: string;
+  /** Date format: YYYY-MM-DD */
+  permitExpiryDate?: string;
+
+  // --- Parties & Authorities ---
+  importer?: ATAParty;
+  exporter?: ATAParty;
+  carrier?: ATAParty;
+  freightForwarder?: ATAParty;
+  permitIssuer?: ATAParty;       // Typically the Chamber of Commerce
+  managementAuthority?: ATAParty; // The national customs administrative authority
+  transportEquipmentOperatorName?: string;
+
+  // --- Customs Offices ---
+  customsOfficeOfDestination?: string;
+  customsOfficeOfEntry?: string;
+  customsOfficeOfTransit?: string;
+  consignmentExitCustomsOffice?: string;
+
+  // --- Geography & Routing ---
+  destinationCountry?: string;
+  consignmentDestinationCountry?: string;
+  exportationCountry?: string;
+  originCountry?: string;
+  placeOfIssue?: string;
+
+  // --- Terms & Declarations ---
+  insuranceCondition?: string;
+  certificationText?: string;
+  natureOfTransaction?: string;
+  typeOfTransitGuarantee?: string;
+
+  // --- Financial Values & Currencies ---
+  monetaryAmount?: number;
+  monetaryAmountCurrency?: string;
   
-  intendedUse?: string; // e.g., "Professional Equipment", "Exhibitions/Fairs", "Commercial Samples"
-
-  // --- Parties ---
-  issuingAssociation?: IssuingAssociation; // The Chamber of Commerce
-  holder?: CarnetHolder; // The owner of the goods
+  insuredValueAmount?: number;
+  insuredValueAmountCurrency?: string;
   
-  /** * List of persons authorized to use the Carnet (Power of Attorney holders).
-   * Often referred to as "Box B" on the Green Cover.
-   */
-  representedBy?: CarnetRepresentative[]; // Mapped from @set container
+  customsValue?: number;
+  customsValueCurrency?: string;
+  
+  unitPrice?: number;
+  unitPriceCurrency?: string;
+  
+  goodsValue?: number;
+  goodsValueCurrency?: string;
+  
+  statisticalValue?: number;
 
-  // --- The Inventory (General List) ---
-  /** * The master list of all items covered by this Carnet.
-   * Printed on the back of the Green Cover and all vouchers.
-   */
-  generalList?: GeneralListItem[]; // Mapped from @set container
+  // --- Weights & Dimensions ---
+  grossWeight?: number;
+  grossWeightUnit?: string;
+  
+  netWeight?: number;
+  netWeightUnit?: string;
+  
+  quantityOrdered?: number;
+  quantity?: number;
+  
+  packageLength?: number;
+  packageLengthUnit?: string;
+  
+  packageWidth?: number;
+  packageWidthUnit?: string;
 
-  // --- Transaction History ---
-  /** * Digital representation of the counterfoils/vouchers used at borders.
-   */
-  voucherRecords?: VoucherRecord[]; // Mapped from @set container
+  // --- Goods Details ---
+  /** Detailed inventory list of items temporarily moving under this carnet */
+  goods?: ATAGoodsItem[]; // Mapped from @set container
 
-  // --- Metadata ---
-  digitalSignature?: string;
-  documentHash?: string;
-  links?: string | string[];
+  // --- Transport & Equipment ---
+  conveyanceReferenceNumber?: string;
+  modeOfTransport?: string;
+  transportMeansIdentifier?: string;
+  vehicleRegistrationNumber?: string;
+  transportEquipmentIdentifier?: string;
+  transportMeansAtBorderCrossing?: string;
 }
 
 // --- Sub-Interfaces ---
 
-export interface IssuingAssociation {
-  name?: string; // e.g., "United States Council for International Business"
-  associationCode?: string;
-  address?: string;
-  city?: string;
-  countryCode?: string;
-  contactPerson?: ContactPerson;
-}
-
-export interface CarnetHolder {
+/**
+ * Base representation of an entity, agency, or authority involved in the ATA Carnet.
+ * Shared across Importer, Exporter, Carrier, Forwarder, Issuer, and Management Authority.
+ */
+export interface ATAParty {
   name?: string;
-  address?: string;
+  addressLine?: string;
   city?: string;
-  stateProvince?: string;
-  postalCode?: string;
-  countryCode?: string;
-  taxId?: string;
-  contactPerson?: ContactPerson;
-}
-
-export interface ContactPerson {
-  name?: string;
-  phone?: string;
+  country?: string;
   email?: string;
 }
 
-export interface CarnetRepresentative {
-  name?: string;
-  passportNumber?: string;
-  nationalIdNumber?: string;
-  driversLicenseNumber?: string;
-  address?: string;
-  powerOfAttorneyReference?: string; // Reference to external POA document if applicable
-}
-
-export interface GeneralListItem {
-  itemNumber?: number; // 1, 2, 3...
-  tradeDescription?: string; // e.g., "Camera Lens 50mm"
-  
-  /** Distinctive marks, serial numbers, etc. */
-  identificationMarks?: string[]; // Mapped from @set container
-  serialNumber?: string;
-  chassisNumber?: string; // For vehicles
-  photoReference?: string; // URL to photo of the item
-  
-  numberOfPieces?: number;
-  weight?: Measurement;
-  volume?: Measurement;
-  value?: MonetaryAmount; // Commercial value (not sale price)
-  
-  countryOfOrigin?: string; // ISO Code
-}
-
-export interface VoucherRecord {
-  voucherNumber?: string;
-  voucherType?: string; // "Exportation", "Importation", "Re-exportation", "Re-importation", "Transit"
-  voucherColor?: string; // "Yellow" (Home), "White" (Foreign), "Blue" (Transit)
-  operationType?: string;
-  
-  state?: string; // "Open", "Closed", "Discharged"
-  
-  customsOffice?: string;
-  countryCode?: string;
-  /** Date format: YYYY-MM-DD */
-  dateOfOperation?: string;
-  
-  customsStamp?: string; // Digital representation of the stamp
-  customsOfficerSignature?: string;
-}
-
-// --- Reusable Types ---
-
-export interface Measurement {
-  value?: number;
-  unit?: string; // e.g., "KGM"
-}
-
-export interface MonetaryAmount {
-  currencyCode?: string;
-  amount?: number;
+/**
+ * Represents an individual item within the ATA Carnet general list of goods.
+ */
+export interface ATAGoodsItem {
+  description?: string;
+  consignmentSummaryDescription?: string;
+  numberOfPackages?: number;
+  shippingMarks?: string;
 }
 
 export type ATACarnetW3C = SignedVerifiableCredential & {

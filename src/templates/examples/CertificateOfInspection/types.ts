@@ -1,114 +1,66 @@
 import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
+/**
+ * Represents a Certificate of Inspection for Organic Products (COI).
+ * An official regulatory document verifying that a shipment of goods complies 
+ * with organic production and labeling rules in the destination country.
+ */
 export interface CertificateOfInspection {
-  "@context"?: string | object;
-  "@id"?: string;
-  "@type"?: string;
+  houseWaybillDocumentIdentifier?: string; // HAWB number reference
+  invoiceNumber?: string;                  // Commercial invoice link
+  permitNumber?: string;                   // COI control or certificate number
 
-  // --- Header Information ---
-  certificateNumber?: string;
-  countryOfOrigin?: string; // ISO Country Code or Name
+  // --- Dates ---
+  /** Date format: YYYY-MM-DD */
+  issueDate?: string;
 
-  // --- Control Body ---
-  issuingControlBody?: IssuingControlBody;
+  // --- Parties & Authorities ---
+  importer?: COIParty;
+  exporter?: COIParty;
+  permitIssuer?: COIParty;       // The inspection body or control authority in origin
+  managementAuthority?: COIParty; // The issuing or endorsing governing authority
 
-  // --- Parties ---
-  exporter?: OrganicExporter;
-  producer?: OrganicProducer;
-  importer?: OrganicImporter;
-  firstConsignee?: OrganicConsignee;
+  // --- Routing & Countries ---
+  destinationCountry?: string;
+  consignmentDestinationCountry?: string;
+  exportationCountry?: string;
+  originCountry?: string;
+
+  // --- Weights & Measures ---
+  netWeight?: number;
+  netWeightUnit?: string; // e.g., "KGM"
 
   // --- Goods Details ---
-  /** List of organic line items */
-  productDetails?: OrganicProductDetail[]; // Mapped from @set container
+  /** List of organic goods covered under this inspection certificate */
+  goods?: COIGoodsItem[]; // Mapped from @set container
 
-  // --- Transport ---
-  transportInformation?: TransportInformation;
-
-  // --- Certification ---
-  declarationOfControlBody?: DeclarationOfControlBody;
-
-  // --- Metadata ---
-  digitalSignature?: string;
-  documentHash?: string;
-  links?: string | string[];
+  // --- Transport Details ---
+  vehicleRegistrationNumber?: string;    // Truck license plate or vessel name
+  transportEquipmentIdentifier?: string; // Container number
 }
 
 // --- Sub-Interfaces ---
 
-export interface IssuingControlBody {
+/**
+ * Base representation of an entity, agency, or authority involved in the COI.
+ * Shared across Importer, Exporter, Permit Issuer, and Management Authority.
+ */
+export interface COIParty {
   name?: string;
-  codeNumber?: string; // e.g., "FR-BIO-01"
-  address?: string;
-  contactDetails?: string; // Email or Phone
-}
-
-/** Base interface for parties in this document to reduce repetition */
-export interface BaseOrganicParty {
-  name?: string;
-  address?: string;
+  addressLine?: string;
   city?: string;
-  stateProvince?: string;
-  postalCode?: string;
-  countryCode?: string;
-}
-
-export interface OrganicExporter extends BaseOrganicParty {
-  contactPerson?: ContactPerson;
-}
-
-export interface OrganicProducer extends BaseOrganicParty {
-  scopeCertificateReference?: string; // Ref to the main organic certificate of the producer
-}
-
-export interface OrganicImporter extends BaseOrganicParty {
-  eoriNumber?: string; // Customs Registration Number
-}
-
-export interface OrganicConsignee extends BaseOrganicParty {
-  // No specific additional fields in context, but distinct semantic role
-}
-
-export interface ContactPerson {
-  name?: string;
-  phone?: string;
+  country?: string;
   email?: string;
 }
 
-export interface OrganicProductDetail {
-  tradeName?: string;
-  cnCode?: string; // Combined Nomenclature (Customs) Code
-  category?: string; // e.g., "Unprocessed Plant Products"
-  lotNumber?: string;
-  numberOfPackages?: number;
-  netWeight?: Measurement;
-}
-
-export interface TransportInformation {
-  modeOfTransport?: string; // e.g., "Sea", "Air"
-  containerNumber?: string;
-  sealNumber?: string;
-  vesselName?: string;
-  flightNumber?: string;
-  /** Date format: YYYY-MM-DD */
-  departureDate?: string;
-}
-
-export interface DeclarationOfControlBody {
-  declarationText?: string;
-  regulationReference?: string; // e.g., "Council Regulation (EC) No 834/2007"
-  /** Date format: YYYY-MM-DD */
-  dateOfIssue?: string;
-  placeOfIssue?: string;
-  certifierName?: string;
-  certifierSignature?: string;
-  officialStamp?: string; // URL or text description
-}
-
-export interface Measurement {
-  value?: number;
-  unit?: string; // e.g., "KGM"
+/**
+ * Represents an individual certified organic goods line item.
+ */
+export interface COIGoodsItem {
+  description?: string;
+  productIdentifier?: string; // Batch/lot code or organic certification identifier
+  hsCode?: string;            // Harmonized System Code
 }
 
 export type CertificateOfInspectionw3c = SignedVerifiableCredential & {
