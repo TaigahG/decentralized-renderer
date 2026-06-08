@@ -1,89 +1,59 @@
 import { SignedVerifiableCredential } from "@trustvc/trustvc";
 import { CredentialSubject } from "@trustvc/trustvc/w3c/vc";
 
+/**
+ * Represents a CITES Permit / Certificate.
+ * An official document required for the international trade, import, or export 
+ * of protected species of wild fauna and flora, ensuring the trade does not 
+ * threaten their survival.
+ */
 export interface CITESPermit {
-  "@context"?: string | object;
-  "@id"?: string;
-  "@type"?: string;
+  transportContractDocument?: string; // Link to the waybill, bill of lading, etc.
+  permitNumber?: string;
 
-  // --- Header Information ---
-  permitCertificateNumber?: string;
-  documentType?: string; // e.g., "Export Permit", "Import Permit", "Re-export Certificate"
-  
+  // --- Dates ---
   /** Date format: YYYY-MM-DD */
-  validUntil?: string;
+  issueDate?: string;
   /** Date format: YYYY-MM-DD */
-  dateOfIssue?: string;
+  permitExpiryDate?: string;
 
-  // --- Authorities & Parties ---
-  managementAuthority?: ManagementAuthority;
-  importer?: CitesParty;
-  exporter?: CitesParty;
-  
-  /** Required if live animals are being transported/housed */
-  locationOfLiveAnimals?: LocationOfLiveAnimals;
+  // --- Parties & Authorities ---
+  importer?: CITESParty;
+  exporter?: CITESParty;
+  permitIssuer?: CITESParty;       // The specific office issuing the document
+  managementAuthority?: CITESParty; // The national CITES Management Authority
 
-  // --- Species / Specimen Details ---
-  /** List of species included in this permit */
-  speciesInformation?: SpeciesInfo[]; // Mapped from @set container
+  // --- Regulatory & Routing Countries ---
+  consignmentDestinationCountry?: string;
+  specimenCountryOfReExport?: string;
+  specimenCountryOfOrigin?: string;
 
-  // --- Customs Endorsement (Box 14 on standard form) ---
-  endorsement?: CitesEndorsement;
+  // --- CITES Classifications ---
+  citesAppendixReference?: string; // e.g., "Appendix I", "Appendix II", "Appendix III"
+  purposeOfCITESTradeTransaction?: string; // e.g., "T" for Commercial, "S" for Scientific, "P" for Personal
 
-  // --- Metadata ---
-  digitalSignature?: string;
-  documentHash?: string;
-  links?: string | string[];
+  // --- Quotas & Quantities ---
+  quantity?: number;         // Quantity of the specific consignment
+  annualQuota?: number;      // Total allowed quota for the country/entity per year
+  exportedQuantity?: number; // Total quantity exported to date under the quota
+
+  // --- Species Details ---
+  nameOfAnimalOrPlant?: string; // Scientific name (e.g., "Panthera leo") or common name
+  specimenDescription?: string; // Details on the type of specimen (e.g., "live animal", "skeletal material", "caviar")
 }
 
 // --- Sub-Interfaces ---
 
-export interface ManagementAuthority {
-  authorityName?: string;
-  authorityCode?: string;
-  address?: string;
-  country?: string;
-}
-
-export interface CitesParty {
+/**
+ * Base representation of an entity, agency, or authority involved in a CITES Permit.
+ * Shared across Importer, Exporter, Permit Issuer, and Management Authority.
+ */
+export interface CITESParty {
   name?: string;
-  address?: string;
+  addressLine?: string;
+  city?: string;
   country?: string;
-}
-
-export interface LocationOfLiveAnimals {
-  facilityName?: string;
-  address?: string;
-}
-
-export interface SpeciesInfo {
-  scientificName?: string; // e.g., "Loxodonta africana"
-  commonName?: string; // e.g., "African Elephant"
-  appendix?: string; // "I", "II", or "III"
-  descriptionOfSpecimens?: string; // e.g., "Live animals", "Tusks"
-  
-  /** List of identification marks (tags, rings, etc.) */
-  marks?: string[]; // Mapped from @set container
-  
-  sourceCode?: string; // e.g., "W" (Wild), "C" (Bred in captivity)
-  purposeCode?: string; // e.g., "T" (Commercial), "Z" (Zoo)
-  
-  quantity?: Measurement;
-  
-  countryOfOrigin?: string; // ISO Country Code
-  permitNumberOfOrigin?: string; // If re-exporting, the original permit number
-}
-
-export interface CitesEndorsement {
-  quantityActuallyExported?: Measurement; // Filled by Customs at time of export
-  portOfExport?: string;
-  customsSignature?: string;
-  customsStamp?: string; // Text representation or link to stamp image
-}
-
-export interface Measurement {
-  value?: number;
-  unit?: string; // e.g., "KGM" (Kilograms), "NAR" (Number of animals)
+  email?: string;
 }
 
 export type CITESPermitW3C = SignedVerifiableCredential & {
