@@ -28,6 +28,7 @@ const config: StorybookConfig = {
           "@emotion/core": "@emotion/react",
           "emotion-theming": "@emotion/react",
           "dotenv/config": path.resolve(__dirname, "..", "empty-module.ts"),
+          "@mattrglobal/node-bbs-signatures": path.resolve(__dirname, "..", "empty-module.ts"),
         },
       },
       optimizeDeps: {

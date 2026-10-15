@@ -17,7 +17,8 @@
     "storybook": "rm -rf node_modules/.cache/storybook && run-s build:css storybook:start",
     "storybook:start": "storybook dev -p 6006",
     "storybook:build": "npm run build:css && storybook build -o storybook-static",
-    "build-storybook": "npm run build:css && storybook build"
+    "build-storybook": "npm run build:css && storybook build",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",
@@ -35,6 +36,7 @@
   },
   "devDependencies": {
     "@mattrglobal/node-bbs-signatures": "^0.20.0",
+    "@playwright/test": "^1.64.1",
     "@storybook/addon-essentials": "^8.5.6",
     "@storybook/addon-interactions": "^8.5.6",
     "@storybook/addon-links": "^8.5.6",

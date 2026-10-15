@@ -20,6 +20,7 @@ export default defineConfig({
     alias: {
       // ponytail: @trustvc/trustvc ESM entry does `import 'dotenv/config'` unconditionally; browser has no fs/.env so stub it. Upgrade path: if a runtime path legitimately needs an env var, expose it via Vite's `import.meta.env.VITE_*` and read it there.
       "dotenv/config": path.resolve(__dirname, "empty-module.ts"),
+      "@mattrglobal/node-bbs-signatures": path.resolve(__dirname, "empty-module.ts"),
     },
   },
   optimizeDeps: {

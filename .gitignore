@@ -26,3 +26,6 @@ dist-ssr
 storybook-static
 docs
 src/main.css
+# Playwright
+playwright-report/
+test-results/
