@@ -2,6 +2,7 @@ import { TemplateRegistry } from "@tradetrust-tt/decentralized-renderer-react-co
 import { TemplateATemplates } from "./examples/TemplateA";
 import { TemplateBTemplates } from "./examples/TemplateB";
 import { InvoiceTemplates } from "./examples/Invoice";
+import { DocumentBundleTemplates } from "./examples/DocumentBundle";
 import { BillOfLadingTemplates } from "./examples/BillOfLading";
 import { WarehouseReceiptTemplates } from "./examples/WarehouseReceipt";
 import { PromissoryNoteTemplates } from "./examples/PromissoryNote";
@@ -54,6 +55,7 @@ export const registry: TemplateRegistry<any> = {
   TEMPLATE_A: TemplateATemplates,
   TEMPLATE_B: TemplateBTemplates,
   INVOICE: InvoiceTemplates,
+  BUNDLE: DocumentBundleTemplates,
   BILL_OF_LADING: BillOfLadingTemplates,
   WAREHOUSE_RECEIPT: WarehouseReceiptTemplates,
   ELECTRONIC_PROMISSORY_NOTE: PromissoryNoteTemplates,
