@@ -65,6 +65,6 @@
     "vite-plugin-node-polyfills": "^0.22.0"
   },
   "engines": {
-    "node": ">=18.x"
+    "node": ">=20.0.0"
   }
 }
