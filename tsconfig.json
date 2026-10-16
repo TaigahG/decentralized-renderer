@@ -10,10 +10,11 @@
     "module": "NodeNext",
     "moduleResolution": "nodenext",
     "resolveJsonModule": true,
-    "jsx": "react",
+    "jsx": "react-jsx",
+    "jsxImportSource": "@emotion/react",
     "inlineSourceMap": false,
     "sourceMap": true,
-    "types": ["node"],
+    "types": ["node", "vite/client"],
     "allowJs": true,
     "noEmit": true
   },
